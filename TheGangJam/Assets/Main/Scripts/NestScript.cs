@@ -1,16 +1,132 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class NestScript : MonoBehaviour
 {
-    private void OnCollisionEnter(Collision collision)
+    [Header("References")]
+    public Transform cameraTransform;              // Main Camera
+    public CameraController playerCameraController; // Drag your CameraController script here
+    public Transform cameraFocusPoint;             // Empty GameObject at nest center
+    public ChickenController player;               // Drag your ChickenController here
+    public GameObject playerVisual;                // The chicken’s mesh/visualRoot
+    public GameObject egg;                         // 👈 Assign your egg mesh here in Inspector
+
+    [Header("Cutscene Settings")]
+    public float cameraPanDuration = 3f;           // How long the cutscene lasts
+    public float cameraOrbitDistance = 5f;         // Distance from focus point
+    public float cameraOrbitHeight = 2f;           // Height above focus point
+
+    [Header("Cooldown Settings")]
+    public float cooldownTime = 5f;
+
+    private bool onCooldown = false;
+    private bool playerInside = false;
+
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.GetComponent<ChickenController>() != null)
+        if (onCooldown) return;
+
+        ChickenController chicken = other.GetComponent<ChickenController>();
+        if (chicken != null && chicken == player)
         {
-            CountdownTimer timer = FindObjectOfType<CountdownTimer>();
-            if (timer != null)
-            {
-                timer.ResetToMaxTime();
-            }
+            playerInside = true;
+            StartCoroutine(NestSequence());
         }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<ChickenController>() == player)
+        {
+            playerInside = false;
+            if (!onCooldown)
+                StartCoroutine(CooldownRoutine());
+        }
+    }
+
+    private IEnumerator NestSequence()
+    {
+        CountdownTimer timer = Object.FindFirstObjectByType<CountdownTimer>();
+
+        // Pause timer
+        if (timer != null) timer.PauseTimer();
+
+        // Hide player visuals & disable movement
+        if (playerVisual != null) playerVisual.SetActive(false);
+        player.enabled = false;
+
+        // Disable player camera controller
+        if (playerCameraController != null) playerCameraController.enabled = false;
+
+        // Show egg
+        if (egg != null) egg.SetActive(true);
+
+        // Save camera state
+        Vector3 camStartPos = cameraTransform.position;
+        Quaternion camStartRot = cameraTransform.rotation;
+
+        // Camera pan
+        float elapsed = 0f;
+        while (elapsed < cameraPanDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / cameraPanDuration);
+
+            // Orbit around nest
+            float angle = t * 360f;
+            Vector3 orbitOffset = Quaternion.Euler(0f, angle, 0f) * Vector3.back * cameraOrbitDistance;
+            Vector3 finalPos = cameraFocusPoint.position + orbitOffset + Vector3.up * cameraOrbitHeight;
+
+            cameraTransform.position = finalPos;
+
+            // 👇 Pan downward over time
+            Vector3 lookTarget = cameraFocusPoint.position;
+            float downwardOffset = Mathf.Lerp(0f, 0.2f, t); // adjust -2f for how far down you want
+            lookTarget += Vector3.down * downwardOffset;
+
+            cameraTransform.LookAt(lookTarget);
+
+            if (timer != null) timer.ResetToMaxTime();
+            yield return null;
+        }
+
+
+        // Hide egg again
+        if (egg != null) egg.SetActive(false);
+
+        // Snap player to nest transform
+        player.transform.position = transform.position;
+        player.transform.rotation = transform.rotation;
+
+        // Restore player
+        if (playerVisual != null) playerVisual.SetActive(true);
+        player.enabled = true;
+
+        // Restore camera
+        cameraTransform.position = camStartPos;
+        cameraTransform.rotation = camStartRot;
+
+        // Re‑enable player camera controller
+        if (playerCameraController != null) playerCameraController.enabled = true;
+
+        // Resume timer
+        if (timer != null) timer.ResumeTimer();
+    }
+
+    private IEnumerator CooldownRoutine()
+    {
+        onCooldown = true;
+        float remaining = cooldownTime;
+        while (remaining > 0f)
+        {
+            if (playerInside)
+            {
+                yield return null;
+                continue;
+            }
+            remaining -= Time.deltaTime;
+            yield return null;
+        }
+        onCooldown = false;
     }
 }

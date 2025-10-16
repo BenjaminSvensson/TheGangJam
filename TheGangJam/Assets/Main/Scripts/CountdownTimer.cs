@@ -1,46 +1,50 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
 using TMPro;
 
 public class CountdownTimer : MonoBehaviour
 {
     [Header("Timer Settings")]
-    public float startTime = 60f;
-    private float currentTime;
-    private float currentMaxTime;
+    public float maxTime = 60f;
+    public float currentTime;
+    public bool autoStart = true;
 
-    [Header("UI (TextMesh Pro)")]
-    public TMP_Text countdownText;
+    [Header("UI")]
+    public TMP_Text timerText;   // drag your UI text here in Inspector
 
-    private void Start()
+    private bool isPaused = false;
+
+    private void Awake()
     {
-        currentMaxTime = startTime;
-        currentTime = currentMaxTime;
+        currentTime = maxTime;
+        UpdateText();
     }
 
     private void Update()
     {
-        currentTime -= Time.deltaTime;
+        if (isPaused) return;
 
-        if (countdownText != null)
+        if (currentTime > 0f)
         {
-            countdownText.text = Mathf.Ceil(currentTime).ToString();
-        }
-
-        if (currentTime <= 0f)
-        {
-            ResetScene();
+            currentTime -= Time.deltaTime;
+            if (currentTime < 0f) currentTime = 0f;
+            UpdateText();
         }
     }
 
-    private void ResetScene()
+    private void UpdateText()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        if (timerText != null)
+        {
+            timerText.text = Mathf.CeilToInt(currentTime).ToString();
+        }
     }
 
-    // 👇 Call this when colliding with a checkpoint
+    public void PauseTimer() => isPaused = true;
+    public void ResumeTimer() => isPaused = false;
+
     public void ResetToMaxTime()
     {
-        currentTime = currentMaxTime;
+        currentTime = maxTime;
+        UpdateText();
     }
 }

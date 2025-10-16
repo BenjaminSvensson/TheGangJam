@@ -11,15 +11,22 @@ public class ChickenController : MonoBehaviour
 
     [Header("Movement Settings")]
     public float walkSpeed = 5f;
+    public float sprintMultiplier = 1.5f;
     public float dashSpeed = 12f;
     public float jumpHeight = 2f;
     public float gravity = -9.81f;
 
-    [Header("Abilities (toggled by PowerUps)")]
+    [Header("Abilities")]
     public bool canWalk = true;
     public bool canJump = true;
     public bool canDoubleJump = false;
     public bool canDash = false;
+    public bool canSprint = true;
+
+    [Header("Momentum Settings")]
+    public float acceleration = 10f;
+    public float deceleration = 15f;
+    private Vector3 currentMoveVelocity;
 
     [Header("Jump Feel Settings")]
     public float coyoteTime = 0.15f;
@@ -39,10 +46,12 @@ public class ChickenController : MonoBehaviour
     private float rotationVelocity;
 
     [Header("Juice Settings")]
-    public float walkSquashAmount = 0.05f;   // subtle squash while walking
-    public float walkSquashSpeed = 6f;       // speed of the cycle
-    public float jumpSquashAmount = 0.3f;    // bigger squash for jump/land
+    public float walkSquashAmount = 0.05f;
+    public float walkSquashSpeed = 6f;
+    public float jumpSquashAmount = 0.3f;
     public float jumpSquashDuration = 0.15f;
+    public float dashStretchAmount = 0.2f;
+    public float dashStretchDuration = 0.2f;
 
     private CharacterController controller;
     private PlayerInputActions inputActions;
@@ -54,6 +63,7 @@ public class ChickenController : MonoBehaviour
 
     private bool isDashing;
     private bool dashOnCooldown;
+    private bool isSprinting;
 
     // Timers
     private float coyoteTimeCounter;
@@ -65,6 +75,10 @@ public class ChickenController : MonoBehaviour
     private float squashTimer;
     private bool isSquashing;
 
+    // Dash stretch
+    private bool dashStretching;
+    private float dashStretchTimer;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -75,6 +89,9 @@ public class ChickenController : MonoBehaviour
 
         inputActions.Player.Jump.performed += ctx => jumpBufferCounter = jumpBufferTime;
         inputActions.Player.Dash.performed += ctx => TryDash();
+
+        inputActions.Player.Sprint.performed += ctx => isSprinting = true;
+        inputActions.Player.Sprint.canceled += ctx => isSprinting = false;
     }
 
     private void Start()
@@ -94,7 +111,7 @@ public class ChickenController : MonoBehaviour
         HandleAnimations();
         HandleVisuals();
 
-        wasGrounded = isGrounded; // track landing
+        wasGrounded = isGrounded;
     }
 
     private void HandleMovement()
@@ -106,17 +123,33 @@ public class ChickenController : MonoBehaviour
         forward.y = 0; right.y = 0;
         forward.Normalize(); right.Normalize();
 
-        Vector3 move = forward * moveInput.y + right * moveInput.x;
+        Vector3 inputDir = forward * moveInput.y + right * moveInput.x;
 
-        if (move.magnitude >= 0.1f)
+        // target speed
+        float baseSpeed = isDashing ? dashSpeed : walkSpeed;
+        if (canSprint && isSprinting && !isDashing) baseSpeed *= sprintMultiplier;
+
+        Vector3 targetVelocity = inputDir.normalized * baseSpeed;
+
+        // momentum-based acceleration/deceleration
+        if (inputDir.magnitude > 0.1f)
         {
-            float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
+            currentMoveVelocity = Vector3.MoveTowards(currentMoveVelocity, targetVelocity, acceleration * Time.deltaTime);
+        }
+        else
+        {
+            currentMoveVelocity = Vector3.MoveTowards(currentMoveVelocity, Vector3.zero, deceleration * Time.deltaTime);
+        }
+
+        // rotate towards movement
+        if (currentMoveVelocity.magnitude >= 0.1f)
+        {
+            float targetAngle = Mathf.Atan2(currentMoveVelocity.x, currentMoveVelocity.z) * Mathf.Rad2Deg;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref rotationVelocity, rotationSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-            float speed = isDashing ? dashSpeed : walkSpeed;
-            controller.Move(move.normalized * speed * Time.deltaTime);
         }
+
+        controller.Move(currentMoveVelocity * Time.deltaTime);
     }
 
     private void HandleGravity()
@@ -159,7 +192,7 @@ public class ChickenController : MonoBehaviour
     private void Jump()
     {
         velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        TriggerSquashStretch(); // squash on jump
+        TriggerSquashStretch();
     }
 
     private void TryDash()
@@ -168,6 +201,10 @@ public class ChickenController : MonoBehaviour
 
         isDashing = true;
         dashOnCooldown = true;
+
+        // trigger dash stretch
+        dashStretching = true;
+        dashStretchTimer = 0f;
 
         Invoke(nameof(StopDash), dashDuration);
         Invoke(nameof(ResetDashCooldown), dashCooldown);
@@ -184,41 +221,36 @@ public class ChickenController : MonoBehaviour
         animator.SetFloat("Speed", speedPercent);
         animator.SetBool("IsJumping", !isGrounded);
         animator.SetBool("IsDashing", isDashing);
+        animator.SetBool("IsSprinting", isSprinting);
     }
 
     private void HandleVisuals()
     {
         if (visualRoot == null) return;
 
-        // --- Subtle walk squash/stretch ---
+        // Subtle walk squash/stretch
         float moveAmount = new Vector2(moveInput.x, moveInput.y).magnitude;
-        if (moveAmount > 0.1f && isGrounded && !isSquashing)
+        if (moveAmount > 0.1f && isGrounded && !isSquashing && !dashStretching)
         {
             float cycle = Mathf.Sin(Time.time * walkSquashSpeed);
-
-            // Scale (Z emphasis, subtle)
             Vector3 walkScale = defaultScale + new Vector3(0, -cycle, cycle) * walkSquashAmount;
             visualRoot.localScale = walkScale;
-
-            // Position offset to keep feet grounded
-            float offsetY = (defaultScale.y - walkScale.y) * 0.5f; 
+            float offsetY = (defaultScale.y - walkScale.y) * 0.5f;
             visualRoot.localPosition = new Vector3(0, offsetY, 0);
         }
-        else if (!isSquashing)
+        else if (!isSquashing && !dashStretching)
         {
-            // Reset smoothly when idle
             visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
             visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
         }
 
-
-        // --- Landing squash ---
+        // Landing squash
         if (!wasGrounded && isGrounded)
         {
             TriggerSquashStretch();
         }
 
-        // --- Jump/Land squash/stretch animation ---
+        // Jump/Land squash
         if (isSquashing)
         {
             squashTimer += Time.deltaTime;
@@ -226,14 +258,12 @@ public class ChickenController : MonoBehaviour
 
             if (t < 0.5f)
             {
-                // squash phase (Z axis emphasis)
                 visualRoot.localScale = Vector3.Lerp(defaultScale,
                     new Vector3(defaultScale.x, defaultScale.y, defaultScale.z - jumpSquashAmount),
                     t * 2f);
             }
             else if (t < 1f)
             {
-                // stretch phase
                 visualRoot.localScale = Vector3.Lerp(
                     new Vector3(defaultScale.x, defaultScale.y, defaultScale.z - jumpSquashAmount),
                     new Vector3(defaultScale.x, defaultScale.y, defaultScale.z + jumpSquashAmount),
@@ -241,13 +271,41 @@ public class ChickenController : MonoBehaviour
             }
             else
             {
-                // return to normal
-                visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
+                                visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
+                visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
+
                 if (Mathf.Abs(visualRoot.localScale.z - defaultScale.z) < 0.01f)
                 {
                     visualRoot.localScale = defaultScale;
+                    visualRoot.localPosition = Vector3.zero;
                     isSquashing = false;
                 }
+            }
+        }
+
+        // Dash stretch effect
+        if (dashStretching && visualRoot != null)
+        {
+            dashStretchTimer += Time.deltaTime;
+            float t = dashStretchTimer / dashStretchDuration;
+
+            if (t < 0.5f)
+            {
+                visualRoot.localScale = Vector3.Lerp(defaultScale,
+                    new Vector3(defaultScale.x, defaultScale.y + dashStretchAmount, defaultScale.z),
+                    t * 2f);
+            }
+            else if (t < 1f)
+            {
+                visualRoot.localScale = Vector3.Lerp(
+                    new Vector3(defaultScale.x, defaultScale.y + dashStretchAmount, defaultScale.z),
+                    defaultScale,
+                    (t - 0.5f) * 2f);
+            }
+            else
+            {
+                visualRoot.localScale = defaultScale;
+                dashStretching = false;
             }
         }
     }
@@ -259,6 +317,7 @@ public class ChickenController : MonoBehaviour
         isSquashing = true;
     }
 
+    // Optional: checkpoint collision hook
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
         NestScript checkpoint = hit.collider.GetComponent<NestScript>();
