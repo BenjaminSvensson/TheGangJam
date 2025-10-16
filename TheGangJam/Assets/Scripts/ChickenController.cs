@@ -33,6 +33,10 @@ public class ChickenController : MonoBehaviour
     public float dashDuration = 0.3f;   // how long the dash lasts
     public float dashCooldown = 1.0f;   // cooldown before dash can be used again
 
+    [Header("Rotation Settings")]
+    public float rotationSmoothTime = 0.1f; // smaller = snappier, larger = smoother
+    private float rotationVelocity;
+
     private CharacterController controller;
     private PlayerInputActions inputActions;
 
@@ -87,7 +91,16 @@ public class ChickenController : MonoBehaviour
         if (move.magnitude >= 0.1f)
         {
             float targetAngle = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, targetAngle, 0);
+
+            // Smooth rotation
+            float angle = Mathf.SmoothDampAngle(
+                transform.eulerAngles.y,
+                targetAngle,
+                ref rotationVelocity,
+                rotationSmoothTime
+            );
+
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
             float speed = isDashing ? dashSpeed : walkSpeed;
             controller.Move(move.normalized * speed * Time.deltaTime);
@@ -172,9 +185,10 @@ public class ChickenController : MonoBehaviour
         animator.SetBool("IsJumping", !isGrounded);
         animator.SetBool("IsDashing", isDashing);
     }
+
+    // 👇 Collision with checkpoints to reset timer
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-
         NestScript checkpoint = hit.collider.GetComponent<NestScript>();
         if (checkpoint != null)
         {
@@ -185,6 +199,4 @@ public class ChickenController : MonoBehaviour
             }
         }
     }
-
-
 }
