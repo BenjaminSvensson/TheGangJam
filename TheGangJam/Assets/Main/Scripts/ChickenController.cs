@@ -4,14 +4,11 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class ChickenController : MonoBehaviour
 {
-    [SerializeField] private Vector3 modelRotationOffset = new Vector3(-90f, 180f, 0f);
-    [SerializeField] private float feetOffset = 0.0f; 
-
-
     [Header("References")]
     public Transform cameraTransform;
     public Animator animator;
-    public Transform visualRoot; // child mesh/animator
+    public Transform visualRoot;
+    public AudioSource audioSource;
 
     [Header("Movement Settings")]
     public float walkSpeed = 5f;
@@ -57,6 +54,19 @@ public class ChickenController : MonoBehaviour
     public float dashStretchAmount = 0.2f;
     public float dashStretchDuration = 0.2f;
 
+    [Header("Slope Alignment")]
+    [SerializeField] private Vector3 modelRotationOffset = new Vector3(-90f, 0f, 0f);
+    [SerializeField] private float feetOffset = 0f;
+
+    [Header("Audio Clips")]
+    public AudioClip[] jumpClips;
+    public AudioClip[] doubleJumpClips;
+    public AudioClip[] landClips;
+    public AudioClip[] walkClips;
+    public AudioClip[] dashClips;
+    [Range(0f, 0.3f)] public float pitchVariation = 0.1f;
+    public float stepInterval = 0.5f;
+
     private CharacterController controller;
     private PlayerInputActions inputActions;
 
@@ -72,6 +82,7 @@ public class ChickenController : MonoBehaviour
     // Timers
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
+    private float stepTimer;
 
     // Visuals
     private Vector3 defaultScale;
@@ -114,10 +125,7 @@ public class ChickenController : MonoBehaviour
         HandleJumpLogic();
         HandleAnimations();
         HandleVisuals();
-        AlignToSurface();
         AlignVisualToSurface();
-
-
 
         wasGrounded = isGrounded;
     }
@@ -133,23 +141,16 @@ public class ChickenController : MonoBehaviour
 
         Vector3 inputDir = forward * moveInput.y + right * moveInput.x;
 
-        // target speed
         float baseSpeed = isDashing ? dashSpeed : walkSpeed;
         if (canSprint && isSprinting && !isDashing) baseSpeed *= sprintMultiplier;
 
         Vector3 targetVelocity = inputDir.normalized * baseSpeed;
 
-        // momentum-based acceleration/deceleration
         if (inputDir.magnitude > 0.1f)
-        {
             currentMoveVelocity = Vector3.MoveTowards(currentMoveVelocity, targetVelocity, acceleration * Time.deltaTime);
-        }
         else
-        {
             currentMoveVelocity = Vector3.MoveTowards(currentMoveVelocity, Vector3.zero, deceleration * Time.deltaTime);
-        }
 
-        // rotate towards movement
         if (currentMoveVelocity.magnitude >= 0.1f)
         {
             float targetAngle = Mathf.Atan2(currentMoveVelocity.x, currentMoveVelocity.z) * Mathf.Rad2Deg;
@@ -158,6 +159,18 @@ public class ChickenController : MonoBehaviour
         }
 
         controller.Move(currentMoveVelocity * Time.deltaTime);
+
+        // Walking SFX
+        if (isGrounded && moveInput.magnitude > 0.1f && !isDashing)
+        {
+            stepTimer -= Time.deltaTime;
+            if (stepTimer <= 0f)
+            {
+                PlayRandomClip(walkClips);
+                stepTimer = stepInterval;
+            }
+        }
+        else stepTimer = 0f;
     }
 
     private void HandleGravity()
@@ -176,30 +189,28 @@ public class ChickenController : MonoBehaviour
 
     private void HandleJumpLogic()
     {
-        if (isGrounded)
-            coyoteTimeCounter = coyoteTime;
-        else
-            coyoteTimeCounter -= Time.deltaTime;
+        if (isGrounded) coyoteTimeCounter = coyoteTime;
+        else coyoteTimeCounter -= Time.deltaTime;
 
-        if (jumpBufferCounter > 0)
-            jumpBufferCounter -= Time.deltaTime;
+        if (jumpBufferCounter > 0) jumpBufferCounter -= Time.deltaTime;
 
         if (canJump && jumpBufferCounter > 0 && coyoteTimeCounter > 0)
         {
-            Jump();
+            Jump(false);
             jumpBufferCounter = 0;
         }
         else if (canDoubleJump && jumpBufferCounter > 0 && !hasDoubleJumped && !isGrounded)
         {
-            Jump();
+            Jump(true);
             hasDoubleJumped = true;
             jumpBufferCounter = 0;
         }
     }
 
-    private void Jump()
+    private void Jump(bool isDouble)
     {
         velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        PlayRandomClip(isDouble ? doubleJumpClips : jumpClips);
         TriggerSquashStretch();
     }
 
@@ -210,7 +221,8 @@ public class ChickenController : MonoBehaviour
         isDashing = true;
         dashOnCooldown = true;
 
-        // trigger dash stretch
+        PlayRandomClip(dashClips);
+
         dashStretching = true;
         dashStretchTimer = 0f;
 
@@ -236,18 +248,20 @@ public class ChickenController : MonoBehaviour
     {
         if (visualRoot == null) return;
 
-        // Subtle walk squash/stretch
         float moveAmount = new Vector2(moveInput.x, moveInput.y).magnitude;
+
+        // Walk squash/stretch (Y axis)
         if (moveAmount > 0.1f && isGrounded && !isSquashing && !dashStretching)
         {
             float cycle = Mathf.Sin(Time.time * walkSquashSpeed);
-            Vector3 walkScale = defaultScale + new Vector3(0, -cycle, cycle) * walkSquashAmount;
+            Vector3 walkScale = defaultScale + new Vector3(0, cycle, 0) * walkSquashAmount;
             visualRoot.localScale = walkScale;
             float offsetY = (defaultScale.y - walkScale.y) * 0.5f;
             visualRoot.localPosition = new Vector3(0, offsetY, 0);
         }
         else if (!isSquashing && !dashStretching)
         {
+            // Smoothly reset when idle
             visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
             visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
         }
@@ -256,6 +270,7 @@ public class ChickenController : MonoBehaviour
         if (!wasGrounded && isGrounded)
         {
             TriggerSquashStretch();
+            PlayRandomClip(landClips);
         }
 
         // Jump/Land squash/stretch (Y axis)
@@ -294,8 +309,7 @@ public class ChickenController : MonoBehaviour
             }
         }
 
-
-        // Dash stretch effect
+        // Dash stretch effect (Z axis)
         if (dashStretching && visualRoot != null)
         {
             dashStretchTimer += Time.deltaTime;
@@ -304,13 +318,13 @@ public class ChickenController : MonoBehaviour
             if (t < 0.5f)
             {
                 visualRoot.localScale = Vector3.Lerp(defaultScale,
-                    new Vector3(defaultScale.x, defaultScale.y + dashStretchAmount, defaultScale.z),
+                    new Vector3(defaultScale.x, defaultScale.y, defaultScale.z + dashStretchAmount),
                     t * 2f);
             }
             else if (t < 1f)
             {
                 visualRoot.localScale = Vector3.Lerp(
-                    new Vector3(defaultScale.x, defaultScale.y + dashStretchAmount, defaultScale.z),
+                    new Vector3(defaultScale.x, defaultScale.y, defaultScale.z + dashStretchAmount),
                     defaultScale,
                     (t - 0.5f) * 2f);
             }
@@ -329,66 +343,28 @@ public class ChickenController : MonoBehaviour
         isSquashing = true;
     }
 
-    // Optional: checkpoint collision hook
-    private void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        NestScript checkpoint = hit.collider.GetComponent<NestScript>();
-        if (checkpoint != null)
-        {
-            CountdownTimer timer = Object.FindFirstObjectByType<CountdownTimer>();
-            if (timer != null)
-            {
-                timer.ResetToMaxTime();
-            }
-        }
-    }
-    private void AlignToSurface()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out hit, 2f, groundMask))
-        {
-            Vector3 surfaceNormal = hit.normal;
-
-            // Get movement direction
-            Vector3 moveDir = currentMoveVelocity;
-            moveDir.y = 0;
-
-            if (moveDir.magnitude > 0.1f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(moveDir, surfaceNormal);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
-            }
-        }
-    }
-
     private void AlignVisualToSurface()
     {
         if (visualRoot == null) return;
 
-        // Only align when grounded
         if (isGrounded && Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 2f, groundMask))
         {
             Vector3 surfaceNormal = hit.normal;
 
-            // Forward direction from player root
             Vector3 forward = transform.forward;
             forward.y = 0;
             if (forward.sqrMagnitude < 0.01f) forward = transform.forward;
 
-            // Build slope‑aligned rotation
             Quaternion targetRot = Quaternion.LookRotation(forward, surfaceNormal);
-            targetRot *= Quaternion.Euler(modelRotationOffset); // your -90° fix
+            targetRot *= Quaternion.Euler(modelRotationOffset);
 
-            // Smoothly rotate the visual only
             visualRoot.rotation = Quaternion.Slerp(visualRoot.rotation, targetRot, Time.deltaTime * 10f);
 
-            // Snap feet to ground only when grounded
             float groundOffset = hit.point.y - transform.position.y;
             visualRoot.localPosition = new Vector3(0, groundOffset + feetOffset, 0);
         }
         else
         {
-            // In air → keep upright relative to player, no snapping
             visualRoot.rotation = Quaternion.Slerp(
                 visualRoot.rotation,
                 transform.rotation * Quaternion.Euler(modelRotationOffset),
@@ -398,7 +374,12 @@ public class ChickenController : MonoBehaviour
         }
     }
 
+    private void PlayRandomClip(AudioClip[] clips)
+    {
+        if (clips == null || clips.Length == 0 || audioSource == null) return;
 
-
-
+        int index = Random.Range(0, clips.Length);
+        audioSource.pitch = 1f + Random.Range(-pitchVariation, pitchVariation);
+        audioSource.PlayOneShot(clips[index]);
+    }
 }
