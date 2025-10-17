@@ -4,17 +4,17 @@ using System.Collections;
 public class NestScript : MonoBehaviour
 {
     [Header("References")]
-    public Transform cameraTransform;              // Main Camera
-    public CameraController playerCameraController; // Drag your CameraController script here
-    public Transform cameraFocusPoint;             // Empty GameObject at nest center
-    public ChickenController player;               // Drag your ChickenController here
-    public GameObject playerVisual;                // The chicken’s mesh/visualRoot
-    public GameObject egg;                         // 👈 Assign your egg mesh here in Inspector
+    public Transform cameraTransform;             
+    public CameraController playerCameraController; 
+    public Transform cameraFocusPoint;             
+    public ChickenController player;               
+    public GameObject playerVisual;                
+    public GameObject egg;                        
 
     [Header("Cutscene Settings")]
-    public float cameraPanDuration = 3f;           // How long the cutscene lasts
-    public float cameraOrbitDistance = 5f;         // Distance from focus point
-    public float cameraOrbitHeight = 2f;           // Height above focus point
+    public float cameraPanDuration = 3f;          
+    public float cameraOrbitDistance = 5f;        
+    public float cameraOrbitHeight = 2f;          
 
     [Header("Cooldown Settings")]
     public float cooldownTime = 5f;

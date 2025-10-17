@@ -4,6 +4,10 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class ChickenController : MonoBehaviour
 {
+    [SerializeField] private Vector3 modelRotationOffset = new Vector3(-90f, 180f, 0f);
+    [SerializeField] private float feetOffset = 0.0f; 
+
+
     [Header("References")]
     public Transform cameraTransform;
     public Animator animator;
@@ -110,6 +114,10 @@ public class ChickenController : MonoBehaviour
         HandleJumpLogic();
         HandleAnimations();
         HandleVisuals();
+        AlignToSurface();
+        AlignVisualToSurface();
+
+
 
         wasGrounded = isGrounded;
     }
@@ -250,7 +258,7 @@ public class ChickenController : MonoBehaviour
             TriggerSquashStretch();
         }
 
-        // Jump/Land squash
+        // Jump/Land squash/stretch (Y axis)
         if (isSquashing)
         {
             squashTimer += Time.deltaTime;
@@ -258,23 +266,26 @@ public class ChickenController : MonoBehaviour
 
             if (t < 0.5f)
             {
+                // squash phase (shorter Y)
                 visualRoot.localScale = Vector3.Lerp(defaultScale,
-                    new Vector3(defaultScale.x, defaultScale.y, defaultScale.z - jumpSquashAmount),
+                    new Vector3(defaultScale.x, defaultScale.y - jumpSquashAmount, defaultScale.z),
                     t * 2f);
             }
             else if (t < 1f)
             {
+                // stretch phase (taller Y)
                 visualRoot.localScale = Vector3.Lerp(
-                    new Vector3(defaultScale.x, defaultScale.y, defaultScale.z - jumpSquashAmount),
-                    new Vector3(defaultScale.x, defaultScale.y, defaultScale.z + jumpSquashAmount),
+                    new Vector3(defaultScale.x, defaultScale.y - jumpSquashAmount, defaultScale.z),
+                    new Vector3(defaultScale.x, defaultScale.y + jumpSquashAmount, defaultScale.z),
                     (t - 0.5f) * 2f);
             }
             else
             {
-                                visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
+                // return to normal
+                visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
                 visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
 
-                if (Mathf.Abs(visualRoot.localScale.z - defaultScale.z) < 0.01f)
+                if (Mathf.Abs(visualRoot.localScale.y - defaultScale.y) < 0.01f)
                 {
                     visualRoot.localScale = defaultScale;
                     visualRoot.localPosition = Vector3.zero;
@@ -282,6 +293,7 @@ public class ChickenController : MonoBehaviour
                 }
             }
         }
+
 
         // Dash stretch effect
         if (dashStretching && visualRoot != null)
@@ -330,4 +342,63 @@ public class ChickenController : MonoBehaviour
             }
         }
     }
+    private void AlignToSurface()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out hit, 2f, groundMask))
+        {
+            Vector3 surfaceNormal = hit.normal;
+
+            // Get movement direction
+            Vector3 moveDir = currentMoveVelocity;
+            moveDir.y = 0;
+
+            if (moveDir.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(moveDir, surfaceNormal);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+            }
+        }
+    }
+
+    private void AlignVisualToSurface()
+    {
+        if (visualRoot == null) return;
+
+        // Only align when grounded
+        if (isGrounded && Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 2f, groundMask))
+        {
+            Vector3 surfaceNormal = hit.normal;
+
+            // Forward direction from player root
+            Vector3 forward = transform.forward;
+            forward.y = 0;
+            if (forward.sqrMagnitude < 0.01f) forward = transform.forward;
+
+            // Build slope‑aligned rotation
+            Quaternion targetRot = Quaternion.LookRotation(forward, surfaceNormal);
+            targetRot *= Quaternion.Euler(modelRotationOffset); // your -90° fix
+
+            // Smoothly rotate the visual only
+            visualRoot.rotation = Quaternion.Slerp(visualRoot.rotation, targetRot, Time.deltaTime * 10f);
+
+            // Snap feet to ground only when grounded
+            float groundOffset = hit.point.y - transform.position.y;
+            visualRoot.localPosition = new Vector3(0, groundOffset + feetOffset, 0);
+        }
+        else
+        {
+            // In air → keep upright relative to player, no snapping
+            visualRoot.rotation = Quaternion.Slerp(
+                visualRoot.rotation,
+                transform.rotation * Quaternion.Euler(modelRotationOffset),
+                Time.deltaTime * 10f
+            );
+            visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
+        }
+    }
+
+
+
+
 }

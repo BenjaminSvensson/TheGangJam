@@ -18,7 +18,7 @@ public class CameraController : MonoBehaviour
     private float yaw, pitch;
 
     private float currentDistance;
-    private float distanceVelocity; // for SmoothDamp
+    private float distanceVelocity;
 
     private void Awake()
     {
@@ -44,14 +44,14 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Update yaw/pitch
+        // Yaw o Pitch
         yaw += lookInput.x * sensitivity * 0.01f;
         pitch -= lookInput.y * sensitivity * 0.01f;
         pitch = Mathf.Clamp(pitch, -30f, 70f);
 
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
 
-        // Desired camera position without collision
+        // Cameraposcollision
         Vector3 desiredPos = target.position - rotation * Vector3.forward * distance;
 
         // Collision check
