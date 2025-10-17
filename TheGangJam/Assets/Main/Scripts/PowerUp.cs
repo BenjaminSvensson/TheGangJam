@@ -1,31 +1,23 @@
 using UnityEngine;
 
-public enum AbilityType { Walk, Jump, DoubleJump, Dash }
-
-public class PowerUp : MonoBehaviour
+public class PowerupPickup : MonoBehaviour
 {
-    public GameObject Base;
-    [Header("Ability To Unlock")]
-    public AbilityType ability;
-
-    [Header("Settings")]
-    public bool destroyOnPickup = true;
+    public enum PowerupType { Jump, DoubleJump, Dash, Sprint }
+    public PowerupType type;
 
     private void OnTriggerEnter(Collider other)
     {
         ChickenController player = other.GetComponent<ChickenController>();
         if (player != null)
         {
-            switch (ability)
+            switch (type)
             {
-                case AbilityType.Walk: player.canWalk = true; break;
-                case AbilityType.Jump: player.canJump = true; break;
-                case AbilityType.DoubleJump: player.canDoubleJump = true; break;
-                case AbilityType.Dash: player.canDash = true; break;
+                case PowerupType.Jump: player.canJump = true; break;
+                case PowerupType.DoubleJump: player.canDoubleJump = true; break;
+                case PowerupType.Dash: player.canDash = true; break;
+                case PowerupType.Sprint: player.canSprint = true; break;
             }
-
-            if (destroyOnPickup)
-                Destroy(Base);
+            gameObject.SetActive(false);
         }
     }
 }

@@ -11,7 +11,11 @@ public class CountdownTimer : MonoBehaviour
     [Header("UI")]
     public TMP_Text timerText;   // drag your UI text here in Inspector
 
+    [Header("Death Manager")]
+    public UniversalDeath deathManager; // assign in Inspector
+
     private bool isPaused = false;
+    private bool hasTriggeredDeath = false;
 
     private void Awake()
     {
@@ -21,13 +25,26 @@ public class CountdownTimer : MonoBehaviour
 
     private void Update()
     {
-        if (isPaused) return;
+        if (isPaused || hasTriggeredDeath) return;
 
         if (currentTime > 0f)
         {
             currentTime -= Time.deltaTime;
             if (currentTime < 0f) currentTime = 0f;
             UpdateText();
+        }
+
+        if (currentTime <= 0f && !hasTriggeredDeath)
+        {
+            hasTriggeredDeath = true;
+            if (deathManager != null)
+            {
+                deathManager.KillPlayer();
+            }
+            else
+            {
+                Debug.LogWarning("No UniversalDeathManager assigned to CountdownTimer!");
+            }
         }
     }
 
@@ -45,6 +62,7 @@ public class CountdownTimer : MonoBehaviour
     public void ResetToMaxTime()
     {
         currentTime = maxTime;
+        hasTriggeredDeath = false; // reset death trigger
         UpdateText();
     }
 }

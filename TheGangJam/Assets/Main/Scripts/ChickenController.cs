@@ -382,4 +382,12 @@ public class ChickenController : MonoBehaviour
         audioSource.pitch = 1f + Random.Range(-pitchVariation, pitchVariation);
         audioSource.PlayOneShot(clips[index]);
     }
+
+    public void ResetVelocity()
+    {
+        velocity = Vector3.zero;
+        currentMoveVelocity = Vector3.zero;
+    }
+
+
 }
