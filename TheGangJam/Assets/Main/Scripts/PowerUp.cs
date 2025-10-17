@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PowerupPickup : MonoBehaviour
 {
-    public enum PowerupType { Jump, DoubleJump, Dash, Sprint }
+    public enum PowerupType { Jump, DoubleJump, Dash, Sprint, SlowFall }
     public PowerupType type;
 
     private void OnTriggerEnter(Collider other)

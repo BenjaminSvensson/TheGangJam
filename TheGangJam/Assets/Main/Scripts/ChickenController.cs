@@ -23,6 +23,7 @@ public class ChickenController : MonoBehaviour
     public bool canDoubleJump = false;
     public bool canDash = false;
     public bool canSprint = true;
+    public bool canSlowFall = true; // NEW
 
     [Header("Momentum Settings")]
     public float acceleration = 10f;
@@ -66,6 +67,10 @@ public class ChickenController : MonoBehaviour
     public AudioClip[] dashClips;
     [Range(0f, 0.3f)] public float pitchVariation = 0.1f;
     public float stepInterval = 0.5f;
+
+    [Header("Slow Fall Settings")]
+    public float slowFallGravityScale = 0.3f;
+    private bool isSlowFalling;
 
     private CharacterController controller;
     private PlayerInputActions inputActions;
@@ -181,9 +186,28 @@ public class ChickenController : MonoBehaviour
         {
             velocity.y = -2f;
             hasDoubleJumped = false;
+            isSlowFalling = false;
         }
 
-        velocity.y += gravity * Time.deltaTime;
+        float appliedGravity = gravity;
+
+        // Slow‑fall condition
+        if (canSlowFall && !isGrounded)
+        {
+            bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
+
+            if (jumpHeld && hasDoubleJumped) // only after jumps are used
+            {
+                appliedGravity = gravity * slowFallGravityScale;
+                isSlowFalling = true;
+            }
+            else
+            {
+                isSlowFalling = false;
+            }
+        }
+
+        velocity.y += appliedGravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
 
@@ -242,6 +266,7 @@ public class ChickenController : MonoBehaviour
         animator.SetBool("IsJumping", !isGrounded);
         animator.SetBool("IsDashing", isDashing);
         animator.SetBool("IsSprinting", isSprinting);
+        animator.SetBool("IsSlowFalling", isSlowFalling);
     }
 
     private void HandleVisuals()
@@ -281,14 +306,12 @@ public class ChickenController : MonoBehaviour
 
             if (t < 0.5f)
             {
-                // squash phase (shorter Y)
                 visualRoot.localScale = Vector3.Lerp(defaultScale,
                     new Vector3(defaultScale.x, defaultScale.y - jumpSquashAmount, defaultScale.z),
                     t * 2f);
             }
             else if (t < 1f)
             {
-                // stretch phase (taller Y)
                 visualRoot.localScale = Vector3.Lerp(
                     new Vector3(defaultScale.x, defaultScale.y - jumpSquashAmount, defaultScale.z),
                     new Vector3(defaultScale.x, defaultScale.y + jumpSquashAmount, defaultScale.z),
@@ -296,7 +319,6 @@ public class ChickenController : MonoBehaviour
             }
             else
             {
-                // return to normal
                 visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
                 visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
 
@@ -383,11 +405,11 @@ public class ChickenController : MonoBehaviour
         audioSource.PlayOneShot(clips[index]);
     }
 
+    // Called by UniversalDeathManager to clear velocity
     public void ResetVelocity()
     {
         velocity = Vector3.zero;
         currentMoveVelocity = Vector3.zero;
+        isSlowFalling = false;
     }
-
-
 }
