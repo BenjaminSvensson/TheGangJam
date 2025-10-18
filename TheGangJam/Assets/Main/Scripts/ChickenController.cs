@@ -23,7 +23,13 @@ public class ChickenController : MonoBehaviour
     public bool canDoubleJump = false;
     public bool canDash = false;
     public bool canSprint = true;
-    public bool canSlowFall = true; // NEW
+    public bool canSlowFall = true;
+
+    [Header("Slow Fall Visuals")]
+    public Transform playerVisual; 
+    public float slowFallTiltAngle = 80f;
+    public float tiltSmoothSpeed = 8f;
+
 
     [Header("Momentum Settings")]
     public float acceleration = 10f;

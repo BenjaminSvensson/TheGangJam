@@ -14,7 +14,7 @@ public class UniversalDeath : MonoBehaviour
     public float respawnDelay = 2f;      // Seconds before respawn
 
     [Header("Powerups")]
-    public List<PowerupPickup> powerupPrefabs; // Assign all powerup objects in scene
+    public List<PowerUp> powerupPrefabs; // Assign all powerup objects in scene
     private List<Vector3> originalPositions = new List<Vector3>();
     private List<Quaternion> originalRotations = new List<Quaternion>();
 
@@ -53,7 +53,7 @@ public class UniversalDeath : MonoBehaviour
         // 4. Reset powerups
         for (int i = 0; i < powerupPrefabs.Count; i++)
         {
-            PowerupPickup p = powerupPrefabs[i];
+            PowerUp p = powerupPrefabs[i];
             p.transform.position = originalPositions[i];
             p.transform.rotation = originalRotations[i];
             p.gameObject.SetActive(true);
