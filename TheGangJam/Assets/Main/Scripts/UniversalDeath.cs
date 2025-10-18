@@ -50,13 +50,21 @@ public class UniversalDeath : MonoBehaviour
         if (playerVisual != null)
             playerVisual.localRotation = Quaternion.Euler(90f, 0f, 0f);
 
-        // 4. Reset powerups
+        // 4. Reset all powerups properly
         for (int i = 0; i < powerupPrefabs.Count; i++)
         {
             PowerUp p = powerupPrefabs[i];
+
+            // Restore position & rotation
             p.transform.position = originalPositions[i];
             p.transform.rotation = originalRotations[i];
-            p.gameObject.SetActive(true);
+
+            // Reactivate GameObject (in case it was disabled in the scene)
+            if (!p.gameObject.activeSelf)
+                p.gameObject.SetActive(true);
+
+            // ✅ NEW: Call ResetPowerUp to re-enable collider, visuals, etc.
+            p.ResetPowerUp();
         }
 
         // 5. Start respawn coroutine
@@ -89,10 +97,10 @@ public class UniversalDeath : MonoBehaviour
             playerVisual.localPosition = Vector3.zero;
         }
 
-        // Re‑enable player script
+        // Re-enable player script
         player.enabled = true;
 
-        // Re‑enable camera follow
+        // Re-enable camera follow
         if (cameraController != null)
             cameraController.enabled = true;
     }
