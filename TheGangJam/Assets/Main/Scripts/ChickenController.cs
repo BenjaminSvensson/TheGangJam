@@ -13,7 +13,6 @@ public class ChickenController : MonoBehaviour
     [Header("Movement Settings")]
     public float walkSpeed = 5f;
     public float sprintMultiplier = 1.5f;
-    public float dashSpeed = 12f;
     public float jumpHeight = 2f;
     public float gravity = -9.81f;
 
@@ -24,12 +23,6 @@ public class ChickenController : MonoBehaviour
     public bool canDash = false;
     public bool canSprint = true;
     public bool canSlowFall = true;
-
-    [Header("Slow Fall Visuals")]
-    public Transform playerVisual; 
-    public float slowFallTiltAngle = 80f;
-    public float tiltSmoothSpeed = 8f;
-
 
     [Header("Momentum Settings")]
     public float acceleration = 10f;
@@ -46,37 +39,18 @@ public class ChickenController : MonoBehaviour
     public LayerMask groundMask;
 
     [Header("Dash Settings")]
-    public float dashDuration = 0.3f;
+    public float dashSpeed = 20f;
+    public float dashDuration = 0.25f;
     public float dashCooldown = 1.0f;
 
     [Header("Rotation Settings")]
     public float rotationSmoothTime = 0.1f;
     private float rotationVelocity;
 
-    [Header("Juice Settings")]
-    public float walkSquashAmount = 0.05f;
-    public float walkSquashSpeed = 6f;
-    public float jumpSquashAmount = 0.3f;
-    public float jumpSquashDuration = 0.15f;
-    public float dashStretchAmount = 0.2f;
-    public float dashStretchDuration = 0.2f;
-
-    [Header("Slope Alignment")]
-    [SerializeField] private Vector3 modelRotationOffset = new Vector3(-90f, 0f, 0f);
-    [SerializeField] private float feetOffset = 0f;
-
-    [Header("Audio Clips")]
-    public AudioClip[] jumpClips;
-    public AudioClip[] doubleJumpClips;
-    public AudioClip[] landClips;
-    public AudioClip[] walkClips;
-    public AudioClip[] dashClips;
-    [Range(0f, 0.3f)] public float pitchVariation = 0.1f;
-    public float stepInterval = 0.5f;
-
     [Header("Slow Fall Settings")]
     public float slowFallGravityScale = 0.3f;
-    private bool isSlowFalling;
+    public float slowFallTiltAngle = 80f;
+    public float tiltSmoothSpeed = 8f;
 
     private CharacterController controller;
     private PlayerInputActions inputActions;
@@ -88,22 +62,14 @@ public class ChickenController : MonoBehaviour
 
     private bool isDashing;
     private bool dashOnCooldown;
+    private Vector3 dashVelocity;
+
     private bool isSprinting;
+    private bool isSlowFalling;
 
     // Timers
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
-    private float stepTimer;
-
-    // Visuals
-    private Vector3 defaultScale;
-    private bool wasGrounded;
-    private float squashTimer;
-    private bool isSquashing;
-
-    // Dash stretch
-    private bool dashStretching;
-    private float dashStretchTimer;
 
     private void Awake()
     {
@@ -120,25 +86,23 @@ public class ChickenController : MonoBehaviour
         inputActions.Player.Sprint.canceled += ctx => isSprinting = false;
     }
 
-    private void Start()
-    {
-        if (visualRoot != null)
-            defaultScale = visualRoot.localScale;
-    }
-
     private void OnEnable() => inputActions.Enable();
     private void OnDisable() => inputActions.Disable();
 
     private void Update()
     {
+        if (isDashing)
+        {
+            // Dash overrides normal movement
+            controller.Move(dashVelocity * Time.deltaTime);
+            return;
+        }
+
         HandleMovement();
         HandleGravity();
         HandleJumpLogic();
         HandleAnimations();
-        HandleVisuals();
-        AlignVisualToSurface();
-
-        wasGrounded = isGrounded;
+        UpdateSlowFallVisual();
     }
 
     private void HandleMovement()
@@ -152,8 +116,8 @@ public class ChickenController : MonoBehaviour
 
         Vector3 inputDir = forward * moveInput.y + right * moveInput.x;
 
-        float baseSpeed = isDashing ? dashSpeed : walkSpeed;
-        if (canSprint && isSprinting && !isDashing) baseSpeed *= sprintMultiplier;
+        float baseSpeed = walkSpeed;
+        if (canSprint && isSprinting) baseSpeed *= sprintMultiplier;
 
         Vector3 targetVelocity = inputDir.normalized * baseSpeed;
 
@@ -170,18 +134,6 @@ public class ChickenController : MonoBehaviour
         }
 
         controller.Move(currentMoveVelocity * Time.deltaTime);
-
-        // Walking SFX
-        if (isGrounded && moveInput.magnitude > 0.1f && !isDashing)
-        {
-            stepTimer -= Time.deltaTime;
-            if (stepTimer <= 0f)
-            {
-                PlayRandomClip(walkClips);
-                stepTimer = stepInterval;
-            }
-        }
-        else stepTimer = 0f;
     }
 
     private void HandleGravity()
@@ -193,16 +145,16 @@ public class ChickenController : MonoBehaviour
             velocity.y = -2f;
             hasDoubleJumped = false;
             isSlowFalling = false;
+            ResetTilt();
         }
 
         float appliedGravity = gravity;
 
-        // Slow‑fall condition
         if (canSlowFall && !isGrounded)
         {
             bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
 
-            if (jumpHeld && hasDoubleJumped) // only after jumps are used
+            if (jumpHeld && hasDoubleJumped)
             {
                 appliedGravity = gravity * slowFallGravityScale;
                 isSlowFalling = true;
@@ -240,8 +192,6 @@ public class ChickenController : MonoBehaviour
     private void Jump(bool isDouble)
     {
         velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        PlayRandomClip(isDouble ? doubleJumpClips : jumpClips);
-        TriggerSquashStretch();
     }
 
     private void TryDash()
@@ -251,16 +201,19 @@ public class ChickenController : MonoBehaviour
         isDashing = true;
         dashOnCooldown = true;
 
-        PlayRandomClip(dashClips);
-
-        dashStretching = true;
-        dashStretchTimer = 0f;
+        // Apply dash impulse once
+        dashVelocity = transform.forward * dashSpeed;
 
         Invoke(nameof(StopDash), dashDuration);
         Invoke(nameof(ResetDashCooldown), dashCooldown);
     }
 
-    private void StopDash() => isDashing = false;
+    private void StopDash()
+    {
+        isDashing = false;
+        dashVelocity = Vector3.zero;
+    }
+
     private void ResetDashCooldown() => dashOnCooldown = false;
 
     private void HandleAnimations()
@@ -275,147 +228,33 @@ public class ChickenController : MonoBehaviour
         animator.SetBool("IsSlowFalling", isSlowFalling);
     }
 
-    private void HandleVisuals()
+    private void UpdateSlowFallVisual()
     {
         if (visualRoot == null) return;
 
-        float moveAmount = new Vector2(moveInput.x, moveInput.y).magnitude;
+        Quaternion targetRotation = Quaternion.identity;
 
-        // Walk squash/stretch (Y axis)
-        if (moveAmount > 0.1f && isGrounded && !isSquashing && !dashStretching)
-        {
-            float cycle = Mathf.Sin(Time.time * walkSquashSpeed);
-            Vector3 walkScale = defaultScale + new Vector3(0, cycle, 0) * walkSquashAmount;
-            visualRoot.localScale = walkScale;
-            float offsetY = (defaultScale.y - walkScale.y) * 0.5f;
-            visualRoot.localPosition = new Vector3(0, offsetY, 0);
-        }
-        else if (!isSquashing && !dashStretching)
-        {
-            // Smoothly reset when idle
-            visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
-            visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
-        }
+        if (isSlowFalling)
+            targetRotation = Quaternion.Euler(slowFallTiltAngle, 0f, 0f);
 
-        // Landing squash
-        if (!wasGrounded && isGrounded)
-        {
-            TriggerSquashStretch();
-            PlayRandomClip(landClips);
-        }
-
-        // Jump/Land squash/stretch (Y axis)
-        if (isSquashing)
-        {
-            squashTimer += Time.deltaTime;
-            float t = squashTimer / jumpSquashDuration;
-
-            if (t < 0.5f)
-            {
-                visualRoot.localScale = Vector3.Lerp(defaultScale,
-                    new Vector3(defaultScale.x, defaultScale.y - jumpSquashAmount, defaultScale.z),
-                    t * 2f);
-            }
-            else if (t < 1f)
-            {
-                visualRoot.localScale = Vector3.Lerp(
-                    new Vector3(defaultScale.x, defaultScale.y - jumpSquashAmount, defaultScale.z),
-                    new Vector3(defaultScale.x, defaultScale.y + jumpSquashAmount, defaultScale.z),
-                    (t - 0.5f) * 2f);
-            }
-            else
-            {
-                visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
-                visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
-
-                if (Mathf.Abs(visualRoot.localScale.y - defaultScale.y) < 0.01f)
-                {
-                    visualRoot.localScale = defaultScale;
-                    visualRoot.localPosition = Vector3.zero;
-                    isSquashing = false;
-                }
-            }
-        }
-
-        // Dash stretch effect (Z axis)
-        if (dashStretching && visualRoot != null)
-        {
-            dashStretchTimer += Time.deltaTime;
-            float t = dashStretchTimer / dashStretchDuration;
-
-            if (t < 0.5f)
-            {
-                visualRoot.localScale = Vector3.Lerp(defaultScale,
-                    new Vector3(defaultScale.x, defaultScale.y, defaultScale.z + dashStretchAmount),
-                    t * 2f);
-            }
-            else if (t < 1f)
-            {
-                visualRoot.localScale = Vector3.Lerp(
-                    new Vector3(defaultScale.x, defaultScale.y, defaultScale.z + dashStretchAmount),
-                    defaultScale,
-                    (t - 0.5f) * 2f);
-            }
-            else
-            {
-                visualRoot.localScale = defaultScale;
-                dashStretching = false;
-            }
-        }
+        visualRoot.localRotation = Quaternion.Slerp(
+            visualRoot.localRotation,
+            targetRotation,
+            Time.deltaTime * tiltSmoothSpeed
+        );
     }
 
-    private void TriggerSquashStretch()
+    private void ResetTilt()
     {
-        if (visualRoot == null) return;
-        squashTimer = 0f;
-        isSquashing = true;
+        if (visualRoot != null)
+            visualRoot.localRotation = Quaternion.identity;
     }
 
-    private void AlignVisualToSurface()
-    {
-        if (visualRoot == null) return;
-
-        if (isGrounded && Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 2f, groundMask))
-        {
-            Vector3 surfaceNormal = hit.normal;
-
-            Vector3 forward = transform.forward;
-            forward.y = 0;
-            if (forward.sqrMagnitude < 0.01f) forward = transform.forward;
-
-            Quaternion targetRot = Quaternion.LookRotation(forward, surfaceNormal);
-            targetRot *= Quaternion.Euler(modelRotationOffset);
-
-            visualRoot.rotation = Quaternion.Slerp(visualRoot.rotation, targetRot, Time.deltaTime * 10f);
-
-            float groundOffset = hit.point.y - transform.position.y;
-            visualRoot.localPosition = new Vector3(0, groundOffset + feetOffset, 0);
-        }
-        else
-        {
-            visualRoot.rotation = Quaternion.Slerp(
-                visualRoot.rotation,
-                transform.rotation * Quaternion.Euler(modelRotationOffset),
-                Time.deltaTime * 10f
-            );
-            visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
-        }
-    }
-
-    private void PlayRandomClip(AudioClip[] clips)
-    {
-        if (clips == null || clips.Length == 0 || audioSource == null) return;
-
-        int index = Random.Range(0, clips.Length);
-        audioSource.pitch = 1f + Random.Range(-pitchVariation, pitchVariation);
-        audioSource.PlayOneShot(clips[index]);
-    }
-
-    // Called by UniversalDeathManager to clear velocity
     public void ResetVelocity()
     {
         velocity = Vector3.zero;
         currentMoveVelocity = Vector3.zero;
         isSlowFalling = false;
+        ResetTilt();
     }
 }
