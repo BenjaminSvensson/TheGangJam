@@ -18,6 +18,11 @@ public class UniversalDeath : MonoBehaviour
     private List<Vector3> originalPositions = new List<Vector3>();
     private List<Quaternion> originalRotations = new List<Quaternion>();
 
+    [Header("Audio")]
+    public AudioSource audioSource;      // Assign in Inspector (on this object or elsewhere)
+    public AudioClip deathSound;         // Sound when player dies
+    public AudioClip respawnSound;       // Sound when player respawns
+
     private void Start()
     {
         // Save original spawn positions for all powerups
@@ -26,10 +31,17 @@ public class UniversalDeath : MonoBehaviour
             originalPositions.Add(p.transform.position);
             originalRotations.Add(p.transform.rotation);
         }
+
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
     }
 
     public void KillPlayer()
     {
+        // 🔊 Play death sound
+        if (audioSource != null && deathSound != null)
+            audioSource.PlayOneShot(deathSound);
+
         // 1. Stop camera following
         if (cameraController != null)
             cameraController.enabled = false;
@@ -63,7 +75,7 @@ public class UniversalDeath : MonoBehaviour
             if (!p.gameObject.activeSelf)
                 p.gameObject.SetActive(true);
 
-            // ✅ NEW: Call ResetPowerUp to re-enable collider, visuals, etc.
+            // ✅ Reset visuals/collider
             p.ResetPowerUp();
         }
 
@@ -103,5 +115,9 @@ public class UniversalDeath : MonoBehaviour
         // Re-enable camera follow
         if (cameraController != null)
             cameraController.enabled = true;
+
+        // 🔊 Play respawn sound
+        if (audioSource != null && respawnSound != null)
+            audioSource.PlayOneShot(respawnSound);
     }
 }
