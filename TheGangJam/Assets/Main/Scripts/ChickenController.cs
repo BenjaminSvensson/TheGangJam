@@ -23,7 +23,7 @@ public class ChickenController : MonoBehaviour
     public bool canDoubleJump = false;
     public bool canDash = false;
     public bool canSprint = true;
-    public bool canSlowFall = true; // NEW
+    public bool canSlowFall = true;
 
     [Header("Momentum Settings")]
     public float acceleration = 10f;
@@ -40,8 +40,13 @@ public class ChickenController : MonoBehaviour
     public LayerMask groundMask;
 
     [Header("Dash Settings")]
-    public float dashDuration = 0.3f;
-    public float dashCooldown = 1.0f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 1f;
+
+    private bool isDashing;
+    private float dashTimer;
+    private bool dashOnCooldown;
+    private Vector3 dashDirection;
 
     [Header("Rotation Settings")]
     public float rotationSmoothTime = 0.1f;
@@ -80,8 +85,6 @@ public class ChickenController : MonoBehaviour
     private bool isGrounded;
     private bool hasDoubleJumped;
 
-    private bool isDashing;
-    private bool dashOnCooldown;
     private bool isSprinting;
 
     // Timers
@@ -125,6 +128,17 @@ public class ChickenController : MonoBehaviour
 
     private void Update()
     {
+        // Handle dash timer
+        if (isDashing)
+        {
+            dashTimer -= Time.deltaTime;
+            if (dashTimer <= 0f)
+            {
+                isDashing = false;
+                dashDirection = Vector3.zero;
+            }
+        }
+
         HandleMovement();
         HandleGravity();
         HandleJumpLogic();
@@ -139,6 +153,7 @@ public class ChickenController : MonoBehaviour
     {
         if (!canWalk) return;
 
+        // Camera-relative input
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
         forward.y = 0; right.y = 0;
@@ -146,8 +161,16 @@ public class ChickenController : MonoBehaviour
 
         Vector3 inputDir = forward * moveInput.y + right * moveInput.x;
 
-        float baseSpeed = isDashing ? dashSpeed : walkSpeed;
-        if (canSprint && isSprinting && !isDashing) baseSpeed *= sprintMultiplier;
+        // --- DASH OVERRIDE ---
+        if (isDashing)
+        {
+            controller.Move(dashDirection * dashSpeed * Time.deltaTime);
+            return;
+        }
+
+        // --- NORMAL MOVEMENT ---
+        float baseSpeed = walkSpeed;
+        if (canSprint && isSprinting) baseSpeed *= sprintMultiplier;
 
         Vector3 targetVelocity = inputDir.normalized * baseSpeed;
 
@@ -166,7 +189,7 @@ public class ChickenController : MonoBehaviour
         controller.Move(currentMoveVelocity * Time.deltaTime);
 
         // Walking SFX
-        if (isGrounded && moveInput.magnitude > 0.1f && !isDashing)
+        if (isGrounded && moveInput.magnitude > 0.1f)
         {
             stepTimer -= Time.deltaTime;
             if (stepTimer <= 0f)
@@ -196,7 +219,7 @@ public class ChickenController : MonoBehaviour
         {
             bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
 
-            if (jumpHeld && hasDoubleJumped) // only after jumps are used
+            if (jumpHeld && hasDoubleJumped)
             {
                 appliedGravity = gravity * slowFallGravityScale;
                 isSlowFalling = true;
@@ -244,18 +267,23 @@ public class ChickenController : MonoBehaviour
 
         isDashing = true;
         dashOnCooldown = true;
+        dashTimer = dashDuration;
 
+        // Dash in facing direction (flat on ground)
+        dashDirection = transform.forward;
+        dashDirection.y = 0f;
+        dashDirection.Normalize();
+
+        // Play dash sound
         PlayRandomClip(dashClips);
 
-        dashStretching = true;
-        dashStretchTimer = 0f;
-
-        Invoke(nameof(StopDash), dashDuration);
         Invoke(nameof(ResetDashCooldown), dashCooldown);
     }
 
-    private void StopDash() => isDashing = false;
-    private void ResetDashCooldown() => dashOnCooldown = false;
+    private void ResetDashCooldown()
+    {
+        dashOnCooldown = false;
+    }
 
     private void HandleAnimations()
     {
@@ -274,6 +302,7 @@ public class ChickenController : MonoBehaviour
         if (visualRoot == null) return;
 
         float moveAmount = new Vector2(moveInput.x, moveInput.y).magnitude;
+
         // Walk squash/stretch (Y axis)
         if (moveAmount > 0.1f && isGrounded && !isSquashing && !dashStretching)
         {
@@ -331,6 +360,12 @@ public class ChickenController : MonoBehaviour
         }
 
         // Dash stretch effect (Z axis)
+        if (isDashing && !dashStretching)
+        {
+            dashStretching = true;
+            dashStretchTimer = 0f;
+        }
+
         if (dashStretching && visualRoot != null)
         {
             dashStretchTimer += Time.deltaTime;
