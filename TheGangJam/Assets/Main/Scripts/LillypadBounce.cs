@@ -5,12 +5,12 @@ using System.Collections;
 public class LilypadBounceTrigger : MonoBehaviour
 {
     [Header("Bounce Settings")]
-    public float sinkAmount = 0.2f;       // How far it dips down
-    public float sinkSpeed = 5f;          // How fast it sinks
-    public float returnSpeed = 2f;        // How fast it rises back up
+    public float sinkAmount = 0.2f;       
+    public float sinkSpeed = 5f;          
+    public float returnSpeed = 2f;      
 
-    [Header("Audio")]
-    public AudioClip bounceSound;         // Assign a splash/boing sound
+    [Header("Sound")]
+    public AudioClip bounceSound;        
 
     private Vector3 startPos;
     private bool isBouncing;
@@ -24,7 +24,7 @@ public class LilypadBounceTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Only react if the player enters the trigger
+        //Trigger
         if (other.CompareTag("Player") && !isBouncing)
         {
             StartCoroutine(BounceRoutine());
@@ -40,14 +40,14 @@ public class LilypadBounceTrigger : MonoBehaviour
 
         Vector3 targetPos = startPos + Vector3.down * sinkAmount;
 
-        // Move down
+        //Move down
         while (Vector3.Distance(transform.position, targetPos) > 0.01f)
         {
             transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * sinkSpeed);
             yield return null;
         }
 
-        // Move back up
+        //Move back up
         while (Vector3.Distance(transform.position, startPos) > 0.01f)
         {
             transform.position = Vector3.Lerp(transform.position, startPos, Time.deltaTime * returnSpeed);

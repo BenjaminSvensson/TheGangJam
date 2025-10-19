@@ -128,7 +128,7 @@ public class ChickenController : MonoBehaviour
 
     private void Update()
     {
-        // Handle dash timer
+        //Dash cooldown
         if (isDashing)
         {
             dashTimer -= Time.deltaTime;
@@ -153,7 +153,7 @@ public class ChickenController : MonoBehaviour
     {
         if (!canWalk) return;
 
-        // Camera-relative input
+        //Input relative to cam
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
         forward.y = 0; right.y = 0;
@@ -161,14 +161,12 @@ public class ChickenController : MonoBehaviour
 
         Vector3 inputDir = forward * moveInput.y + right * moveInput.x;
 
-        // --- DASH OVERRIDE ---
         if (isDashing)
         {
             controller.Move(dashDirection * dashSpeed * Time.deltaTime);
             return;
         }
 
-        // --- NORMAL MOVEMENT ---
         float baseSpeed = walkSpeed;
         if (canSprint && isSprinting) baseSpeed *= sprintMultiplier;
 
@@ -188,7 +186,7 @@ public class ChickenController : MonoBehaviour
 
         controller.Move(currentMoveVelocity * Time.deltaTime);
 
-        // Walking SFX
+        //Walksound
         if (isGrounded && moveInput.magnitude > 0.1f)
         {
             stepTimer -= Time.deltaTime;
@@ -214,7 +212,7 @@ public class ChickenController : MonoBehaviour
 
         float appliedGravity = gravity;
 
-        // Slow‑fall condition
+        //Conditions for use slowfall
         if (canSlowFall && !isGrounded)
         {
             bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
@@ -269,12 +267,10 @@ public class ChickenController : MonoBehaviour
         dashOnCooldown = true;
         dashTimer = dashDuration;
 
-        // Dash in facing direction (flat on ground)
         dashDirection = transform.forward;
         dashDirection.y = 0f;
         dashDirection.Normalize();
 
-        // Play dash sound
         PlayRandomClip(dashClips);
 
         Invoke(nameof(ResetDashCooldown), dashCooldown);
@@ -303,7 +299,7 @@ public class ChickenController : MonoBehaviour
 
         float moveAmount = new Vector2(moveInput.x, moveInput.y).magnitude;
 
-        // Walk squash/stretch (Y axis)
+        //Walk squash/stretch
         if (moveAmount > 0.1f && isGrounded && !isSquashing && !dashStretching)
         {
             float cycle = Mathf.Sin(Time.time * walkSquashSpeed);
@@ -314,19 +310,19 @@ public class ChickenController : MonoBehaviour
         }
         else if (!isSquashing && !dashStretching)
         {
-            // Smoothly reset when idle
+            //Smoothly reset when idle
             visualRoot.localScale = Vector3.Lerp(visualRoot.localScale, defaultScale, Time.deltaTime * 10f);
             visualRoot.localPosition = Vector3.Lerp(visualRoot.localPosition, Vector3.zero, Time.deltaTime * 10f);
         }
 
-        // Landing squash
+        //Landing squash
         if (!wasGrounded && isGrounded)
         {
             TriggerSquashStretch();
             PlayRandomClip(landClips);
         }
 
-        // Jump/Land squash/stretch (Y axis)
+        // Jump/Land squash/stretch
         if (isSquashing)
         {
             squashTimer += Time.deltaTime;
@@ -359,7 +355,7 @@ public class ChickenController : MonoBehaviour
             }
         }
 
-        // Dash stretch effect (Z axis)
+        //Dash stretch effect
         if (isDashing && !dashStretching)
         {
             dashStretching = true;
@@ -438,8 +434,6 @@ public class ChickenController : MonoBehaviour
         audioSource.pitch = 1f + Random.Range(-pitchVariation, pitchVariation);
         audioSource.PlayOneShot(clips[index]);
     }
-
-    // Called by UniversalDeathManager to clear velocity
     public void ResetVelocity()
     {
         velocity = Vector3.zero;

@@ -48,40 +48,37 @@ public class NestScript : MonoBehaviour
     {
         CountdownTimer timer = Object.FindFirstObjectByType<CountdownTimer>();
 
-        // Pause timer
+        //Pause timer
         if (timer != null) timer.PauseTimer();
 
-        // Hide player visuals & disable movement
+        //Hide player for sequence
         if (playerVisual != null) playerVisual.SetActive(false);
         player.enabled = false;
 
-        // Disable player camera controller
+        //DisablePController
         if (playerCameraController != null) playerCameraController.enabled = false;
 
-        // Show egg
+        //ShowEgg
         if (egg != null) egg.SetActive(true);
 
-        // Save camera state
         Vector3 camStartPos = cameraTransform.position;
         Quaternion camStartRot = cameraTransform.rotation;
 
-        // Camera pan
+        //Camera pan
         float elapsed = 0f;
         while (elapsed < cameraPanDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, elapsed / cameraPanDuration);
 
-            // Orbit around nest
             float angle = t * 360f;
             Vector3 orbitOffset = Quaternion.Euler(0f, angle, 0f) * Vector3.back * cameraOrbitDistance;
             Vector3 finalPos = cameraFocusPoint.position + orbitOffset + Vector3.up * cameraOrbitHeight;
 
             cameraTransform.position = finalPos;
 
-            // 👇 Pan downward over time
             Vector3 lookTarget = cameraFocusPoint.position;
-            float downwardOffset = Mathf.Lerp(0f, 0.2f, t); // adjust -2f for how far down you want
+            float downwardOffset = Mathf.Lerp(0f, 0.2f, t);
             lookTarget += Vector3.down * downwardOffset;
 
             cameraTransform.LookAt(lookTarget);

@@ -4,33 +4,33 @@ using TMPro;
 public class CountdownTimer : MonoBehaviour
 {
     [Header("Timer Settings")]
-    public float maxTime = 60f;         // starting max time
-    public float currentTime;           // current countdown value
-    private float initialMaxTime;       // stored at Start
+    public float maxTime = 60f;         
+    public float currentTime;           
+    private float initialMaxTime;       
 
     [Header("UI")]
-    public TMP_Text timerText;          // assign a TMP text in your UI
+    public TMP_Text timerText;         
 
     private bool isRunning = true;
     private bool hasStarted = false;
 
     private void Start()
     {
-        // Store the original max time
+        
         initialMaxTime = maxTime;
 
-        // Start with full time
+        
         currentTime = maxTime;
 
         UpdateUI();
 
         if (timerText != null)
-            timerText.gameObject.SetActive(false); // hide at start
+            timerText.gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        if (!hasStarted) return; // don’t tick until started
+        if (!hasStarted) return; 
 
         if (!isRunning) return;
 
@@ -59,11 +59,11 @@ public class CountdownTimer : MonoBehaviour
     {
         Debug.Log("Timer ended! Triggering death...");
 
-        // Call into your death system
+        //Kill player
         UniversalDeath  deathManager = FindFirstObjectByType<UniversalDeath>();
         if (deathManager != null)
         {
-            deathManager.KillPlayer(); // make sure this method exists in your manager
+            deathManager.KillPlayer();
         }
         else
         {
@@ -71,9 +71,6 @@ public class CountdownTimer : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Call this when the player dies to reset timer to original values.
-    /// </summary>
     public void ResetTimerOnDeath()
     {
         maxTime = initialMaxTime;
@@ -82,9 +79,6 @@ public class CountdownTimer : MonoBehaviour
         UpdateUI();
     }
 
-    /// <summary>
-    /// Adds bonus time (used by powerups).
-    /// </summary>
     public void AddBonusTime(float bonus)
     {
         maxTime += bonus;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ColliderKill : MonoBehaviour
+public class KillaScript : MonoBehaviour
 {
     [Header("References")]
     public UniversalDeath deathManager; 
@@ -13,10 +13,6 @@ public class ColliderKill : MonoBehaviour
             if (deathManager != null)
             {
                 deathManager.KillPlayer();
-            }
-            else
-            {
-                Debug.LogWarning("No UniversalDeathManager assigned to ColliderKill!");
             }
         }
     }

@@ -5,7 +5,7 @@ public class CarLooper : MonoBehaviour
 {
     [SerializeField] private Transform tunnelStart;
     [SerializeField] private Transform tunnelEnd;
-    [SerializeField] private Transform carModel; // assign the visual mesh here
+    [SerializeField] private Transform carModel; 
     [SerializeField] private float speed = 10f;
     private bool isWaiting = false;
     private Transform target;
@@ -19,11 +19,10 @@ public class CarLooper : MonoBehaviour
     {
         if (target == null || isWaiting) return;
 
-        // Rotate only the car model to face the target
         if (carModel != null)
             carModel.LookAt(target);
 
-        // Move the root object forward
+       
         transform.position = Vector3.MoveTowards(
             transform.position,
             target.position,

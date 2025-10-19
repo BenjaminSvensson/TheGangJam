@@ -44,17 +44,15 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Yaw o Pitch
         yaw += lookInput.x * sensitivity * 0.01f;
         pitch -= lookInput.y * sensitivity * 0.01f;
         pitch = Mathf.Clamp(pitch, -30f, 70f);
 
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);
 
-        // Cameraposcollision
         Vector3 desiredPos = target.position - rotation * Vector3.forward * distance;
 
-        // Collision check
+        //Collision check
         float targetDist = distance;
         if (Physics.SphereCast(target.position, 0.2f, (desiredPos - target.position).normalized,
                                out RaycastHit hit, distance, collisionMask))
@@ -62,7 +60,6 @@ public class CameraController : MonoBehaviour
             targetDist = Mathf.Clamp(hit.distance - collisionBuffer, minDistance, distance);
         }
 
-        // Smooth the distance value
         currentDistance = Mathf.SmoothDamp(currentDistance, targetDist, ref distanceVelocity, smoothTime);
 
         // Final camera position

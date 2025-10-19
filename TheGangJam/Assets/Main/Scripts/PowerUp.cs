@@ -15,10 +15,10 @@ public class PowerUp : MonoBehaviour
 
     [Header("Feedback")]
     public AudioClip pickupSound;
-    public TMP_Text pickupText;              // Assign a UI text (not a child of this object)
+    public TMP_Text pickupText;              
 
     [TextArea]
-    public string[] pickupMessages;          // 👈 multiple messages now
+    public string[] pickupMessages;          
     public float fadeDuration = 0.5f;
     public float holdDuration = 1.5f;
 
@@ -45,7 +45,7 @@ public class PowerUp : MonoBehaviour
         if (player == null)
             return;
 
-        // Grant ability
+        //Give ability 
         switch (type)
         {
             case PowerupType.Jump: player.canJump = true; break;
@@ -55,18 +55,15 @@ public class PowerUp : MonoBehaviour
             case PowerupType.SlowFall: player.canSlowFall = true; break;
         }
 
-        // Timer logic
         if (timer != null)
         {
             timer.StartTimer();
             timer.AddBonusTime(bonusTime);
         }
 
-        // Play pickup sound
         if (pickupSound != null)
             AudioSource.PlayClipAtPoint(pickupSound, Camera.main != null ? Camera.main.transform.position : transform.position);
 
-        // Show multiple pickup texts
         if (pickupText != null && pickupMessages != null && pickupMessages.Length > 0)
             TemporaryTextFader.FadeSequence(pickupText, pickupMessages, fadeDuration, holdDuration);
 
@@ -101,7 +98,7 @@ public class PowerUp : MonoBehaviour
         enabled = true;
     }
 
-    // Helper class handles text fading
+    //Handle fade
     private class TemporaryTextFader : MonoBehaviour
     {
         public static void FadeSequence(TMP_Text text, string[] messages, float fadeDuration, float holdDuration)

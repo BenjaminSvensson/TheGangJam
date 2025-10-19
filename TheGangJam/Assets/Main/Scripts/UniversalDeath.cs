@@ -5,27 +5,27 @@ using System.Collections.Generic;
 public class UniversalDeath : MonoBehaviour
 {
     [Header("References")]
-    public ChickenController player;          // Your player controller
-    public Transform playerVisual;            // The mesh/visual root
-    public CameraController cameraController; // Your camera follow script
+    public ChickenController player;          
+    public Transform playerVisual;            
+    public CameraController cameraController; 
 
     [Header("Respawn Settings")]
-    public Transform respawnPoint;       // Assign a default spawn or checkpoint
-    public float respawnDelay = 2f;      // Seconds before respawn
+    public Transform respawnPoint;       
+    public float respawnDelay = 2f;      
 
     [Header("Powerups")]
-    public List<PowerUp> powerupPrefabs; // Assign all powerup objects in scene
+    public List<PowerUp> powerupPrefabs; //PowerupObjectForRespawnFunc Later
     private List<Vector3> originalPositions = new List<Vector3>();
     private List<Quaternion> originalRotations = new List<Quaternion>();
 
     [Header("Audio")]
-    public AudioSource audioSource;      // Assign in Inspector (on this object or elsewhere)
-    public AudioClip deathSound;         // Sound when player dies
-    public AudioClip respawnSound;       // Sound when player respawns
+    public AudioSource audioSource;      
+    public AudioClip deathSound;         
+    public AudioClip respawnSound;       
 
     private void Start()
     {
-        // Save original spawn positions for all powerups
+        //Save powerup positions for respawing
         foreach (var p in powerupPrefabs)
         {
             originalPositions.Add(p.transform.position);
@@ -38,48 +38,44 @@ public class UniversalDeath : MonoBehaviour
 
     public void KillPlayer()
     {
-        // 🔊 Play death sound
+        
         if (audioSource != null && deathSound != null)
             audioSource.PlayOneShot(deathSound);
 
-        // 1. Stop camera following
+        //StopCamFollow
         if (cameraController != null)
             cameraController.enabled = false;
 
-        // 2. Disable abilities
         if (player != null)
         {
-            player.canWalk = true;   // keep walk
+            player.canWalk = true;   
             player.canJump = false;
             player.canDoubleJump = false;
             player.canDash = false;
             player.canSprint = false;
 
-            player.enabled = false; // freeze controller logic
+            player.enabled = false;
         }
-
-        // 3. Make player flop over
         if (playerVisual != null)
             playerVisual.localRotation = Quaternion.Euler(90f, 0f, 0f);
 
-        // 4. Reset all powerups properly
+        //Powerup respawn
         for (int i = 0; i < powerupPrefabs.Count; i++)
         {
             PowerUp p = powerupPrefabs[i];
 
-            // Restore position & rotation
+           
             p.transform.position = originalPositions[i];
             p.transform.rotation = originalRotations[i];
 
-            // Reactivate GameObject (in case it was disabled in the scene)
+           
             if (!p.gameObject.activeSelf)
                 p.gameObject.SetActive(true);
 
-            // ✅ Reset visuals/collider
+            
             p.ResetPowerUp();
         }
 
-        // 5. Start respawn coroutine
         StartCoroutine(RespawnRoutine());
     }
 
@@ -92,31 +88,25 @@ public class UniversalDeath : MonoBehaviour
             CharacterController cc = player.GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
 
-            // Move player root to respawn point
+            //Chicken to nestlocation for respawn dudes
             player.transform.position = respawnPoint.position;
             player.transform.rotation = respawnPoint.rotation;
 
-            // Reset velocity
             player.ResetVelocity();
 
             if (cc != null) cc.enabled = true;
         }
 
-        // Reset visuals
         if (playerVisual != null)
         {
             playerVisual.localRotation = Quaternion.identity;
             playerVisual.localPosition = Vector3.zero;
         }
-
-        // Re-enable player script
         player.enabled = true;
 
-        // Re-enable camera follow
         if (cameraController != null)
             cameraController.enabled = true;
 
-        // 🔊 Play respawn sound
         if (audioSource != null && respawnSound != null)
             audioSource.PlayOneShot(respawnSound);
     }

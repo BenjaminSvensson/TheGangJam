@@ -17,8 +17,8 @@ public class AreaTrigger : MonoBehaviour
     public float holdDuration = 2f;
 
     [Header("Audio Sources")]
-    public AudioSource sfxSource;       // For entry sound
-    public AudioSource ambianceSourceA; // For crossfade
+    public AudioSource sfxSource;       //Area enter sound
+    public AudioSource ambianceSourceA;
     public AudioSource ambianceSourceB;
 
     private static HashSet<string> visitedAreas = new HashSet<string>();
@@ -36,7 +36,7 @@ public class AreaTrigger : MonoBehaviour
             nextAmbianceSource = ambianceSourceB;
         }
 
-        // Ensure text starts invisible but active
+        //Start text transparant make visible when used
         if (areaNameText != null)
         {
             Color c = areaNameText.color;
@@ -49,16 +49,16 @@ public class AreaTrigger : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        // First-time entry logic
+        //Trigger func
         if (!visitedAreas.Contains(areaName))
         {
             visitedAreas.Add(areaName);
 
-            // Play entry sound once
+            
             if (entrySound != null && sfxSource != null)
                 sfxSource.PlayOneShot(entrySound);
 
-            // Show area name
+            //Show area name
             if (areaNameText != null)
             {
                 if (showNameRoutine != null) StopCoroutine(showNameRoutine);
@@ -66,7 +66,7 @@ public class AreaTrigger : MonoBehaviour
             }
         }
 
-        // Switch ambiance every time
+        //Swap ambiance
         if (ambianceClip != null && currentAmbianceSource != null && nextAmbianceSource != null)
         {
             if (crossfadeRoutine != null) StopCoroutine(crossfadeRoutine);
@@ -105,7 +105,7 @@ public class AreaTrigger : MonoBehaviour
 
     private IEnumerator CrossfadeAmbiance(AudioClip newClip)
     {
-        if (currentAmbianceSource.clip == newClip) yield break; // already playing
+        if (currentAmbianceSource.clip == newClip) yield break;
 
         nextAmbianceSource.clip = newClip;
         nextAmbianceSource.volume = 0f;
@@ -125,7 +125,6 @@ public class AreaTrigger : MonoBehaviour
         currentAmbianceSource.volume = 0f;
         nextAmbianceSource.volume = 1f;
 
-        // Swap references
         var temp = currentAmbianceSource;
         currentAmbianceSource = nextAmbianceSource;
         nextAmbianceSource = temp;
