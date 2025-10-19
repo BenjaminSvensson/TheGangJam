@@ -841,12 +841,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c478c25c180186643a20aec3255ccae4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AreaTrigger
-  areaName: 'Farmlands: The journey begins, what is that sparkly in the distance?'
+  areaName: The chicken saw something sparkling in the distance
   entrySound: {fileID: 8300000, guid: 88a6467fd1f133a43b19eda4da148812, type: 3}
   ambianceClip: {fileID: 8300000, guid: 68fceabee0ca9d440aaef39c3ed2bab0, type: 3}
   areaNameText: {fileID: 361797385}
-  fadeDuration: 1
-  holdDuration: 3
+  fadeDuration: 0.6
+  holdDuration: 2.5
   sfxSource: {fileID: 1783328867}
   ambianceSourceA: {fileID: 1490574133}
   ambianceSourceB: {fileID: 689380062}
@@ -880,7 +880,7 @@ Transform:
   m_GameObject: {fileID: 143351694}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 27.2366, y: -0.5, z: 8.42}
+  m_LocalPosition: {x: 27.2366, y: -0.5, z: 14.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1454,10 +1454,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 44.75
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -1492,7 +1492,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -431.18994, y: 0, z: -430.41675, w: 0}
+  m_margin: {x: -396.51108, y: 0, z: -393.4131, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -3777,8 +3777,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 178.45538, y: 17.27191, z: 250.95644}
-  m_Center: {x: 58.113297, y: 8.135955, z: 120.50204}
+  m_Size: {x: 149.81908, y: 17.27191, z: 252.38638}
+  m_Center: {x: 72.43145, y: 8.135955, z: 119.78706}
 --- !u!4 &518280970
 Transform:
   m_ObjectHideFlags: 0
@@ -9438,10 +9438,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 44.75
   m_fontSizeBase: 36
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -9476,7 +9476,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -431.18994, y: 0, z: -430.41675, w: 0}
+  m_margin: {x: -366.61554, y: 0, z: -365.76978, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -10345,6 +10345,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: Jump
       objectReference: {fileID: 0}
+    - target: {fileID: 3943047009372588171, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3943047009372588171, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3943047009372588171, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3943047009372588171, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.017
+      objectReference: {fileID: 0}
+    - target: {fileID: 3943047009372588171, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.839
+      objectReference: {fileID: 0}
+    - target: {fileID: 3943047009372588171, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.19
+      objectReference: {fileID: 0}
     - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
       propertyPath: bonusTime
       value: 10
@@ -10353,17 +10377,50 @@ PrefabInstance:
       propertyPath: pickupText
       value: 
       objectReference: {fileID: 2071204029}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: fadeDuration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: holdDuration
+      value: 2.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: pickupMessage
+      value: 'The seed was cursed with the ability to see the chickens lifespan,
+        In return it granted the chicken the ability to jump [Space]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: pickupMessages.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: 'pickupMessages.Array.data[0]'
+      value: The seed cursed the chicken to see its lifespan.
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: 'pickupMessages.Array.data[1]'
+      value: In return, it granted the power to jump [Space].
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: 'pickupMessages.Array.data[2]'
+      value: Seed powers pass down through generations.
+      objectReference: {fileID: 0}
+    - target: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+      propertyPath: 'pickupMessages.Array.data[3]'
+      value: When your time runs low, return to the coop to lay an egg.
+      objectReference: {fileID: 0}
     - target: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.88
+      value: 4.42
       objectReference: {fileID: 0}
     - target: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.56
+      value: 0.29
       objectReference: {fileID: 0}
     - target: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 38.01
+      value: 37.34
       objectReference: {fileID: 0}
     - target: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
       propertyPath: m_LocalRotation.w

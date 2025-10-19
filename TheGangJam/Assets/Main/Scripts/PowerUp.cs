@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using System.Collections;
 
@@ -15,9 +15,10 @@ public class PowerUp : MonoBehaviour
 
     [Header("Feedback")]
     public AudioClip pickupSound;
-    public TMP_Text pickupText;             // Assign a UI text (not a child of this object)
+    public TMP_Text pickupText;              // Assign a UI text (not a child of this object)
+
     [TextArea]
-    public string pickupMessage = "Powerup Collected!";
+    public string[] pickupMessages;          // 👈 multiple messages now
     public float fadeDuration = 0.5f;
     public float holdDuration = 1.5f;
 
@@ -26,11 +27,9 @@ public class PowerUp : MonoBehaviour
 
     private void Awake()
     {
-        // Cache components for hiding the pickup
         renderers = GetComponentsInChildren<Renderer>(includeInactive: true);
         myCollider = GetComponent<Collider>();
 
-        // Ensure pickupText starts invisible
         if (pickupText != null)
         {
             pickupText.gameObject.SetActive(true);
@@ -56,22 +55,21 @@ public class PowerUp : MonoBehaviour
             case PowerupType.SlowFall: player.canSlowFall = true; break;
         }
 
-        // Add time bonus
+        // Timer logic
         if (timer != null)
         {
-            timer.maxTime += bonusTime;
-            timer.currentTime = Mathf.Min(timer.currentTime + bonusTime, timer.maxTime);
+            timer.StartTimer();
+            timer.AddBonusTime(bonusTime);
         }
 
         // Play pickup sound
         if (pickupSound != null)
             AudioSource.PlayClipAtPoint(pickupSound, Camera.main != null ? Camera.main.transform.position : transform.position);
 
-        // Show pickup text (runs independently)
-        if (pickupText != null)
-            TemporaryTextFader.Fade(pickupText, pickupMessage, fadeDuration, holdDuration);
+        // Show multiple pickup texts
+        if (pickupText != null && pickupMessages != null && pickupMessages.Length > 0)
+            TemporaryTextFader.FadeSequence(pickupText, pickupMessages, fadeDuration, holdDuration);
 
-        // Hide visuals and disable collider (don�t destroy!)
         HidePowerUp();
     }
 
@@ -86,10 +84,9 @@ public class PowerUp : MonoBehaviour
         if (myCollider != null)
             myCollider.enabled = false;
 
-        enabled = false; // disable this script to prevent re-triggering
+        enabled = false;
     }
 
-    // Allow death system or reset logic to restore the pickup
     public void ResetPowerUp()
     {
         if (renderers != null)
@@ -104,44 +101,46 @@ public class PowerUp : MonoBehaviour
         enabled = true;
     }
 
-    // Helper class handles text fading on a persistent object
+    // Helper class handles text fading
     private class TemporaryTextFader : MonoBehaviour
     {
-        private TMP_Text text;
-
-        public static void Fade(TMP_Text text, string message, float fadeDuration, float holdDuration)
+        public static void FadeSequence(TMP_Text text, string[] messages, float fadeDuration, float holdDuration)
         {
-            if (text == null)
+            if (text == null || messages == null || messages.Length == 0)
                 return;
 
             var go = new GameObject("TempTextFader");
             DontDestroyOnLoad(go);
             var helper = go.AddComponent<TemporaryTextFader>();
-            helper.StartCoroutine(helper.DoFade(text, message, fadeDuration, holdDuration));
+            helper.StartCoroutine(helper.DoFadeSequence(text, messages, fadeDuration, holdDuration));
         }
 
-        private IEnumerator DoFade(TMP_Text text, string message, float fadeDuration, float holdDuration)
+        private IEnumerator DoFadeSequence(TMP_Text text, string[] messages, float fadeDuration, float holdDuration)
         {
             text.gameObject.SetActive(true);
-            text.text = message;
 
-            // Fade in
-            for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+            foreach (var message in messages)
             {
-                text.alpha = Mathf.Lerp(0f, 1f, t / fadeDuration);
-                yield return null;
-            }
-            text.alpha = 1f;
+                text.text = message;
 
-            yield return new WaitForSeconds(holdDuration);
+                // Fade in
+                for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+                {
+                    text.alpha = Mathf.Lerp(0f, 1f, t / fadeDuration);
+                    yield return null;
+                }
+                text.alpha = 1f;
 
-            // Fade out
-            for (float t = 0; t < fadeDuration; t += Time.deltaTime)
-            {
-                text.alpha = Mathf.Lerp(1f, 0f, t / fadeDuration);
-                yield return null;
+                yield return new WaitForSeconds(holdDuration);
+
+                // Fade out
+                for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+                {
+                    text.alpha = Mathf.Lerp(1f, 0f, t / fadeDuration);
+                    yield return null;
+                }
+                text.alpha = 0f;
             }
-            text.alpha = 0f;
 
             Destroy(gameObject);
         }

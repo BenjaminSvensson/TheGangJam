@@ -12,6 +12,7 @@ public class CountdownTimer : MonoBehaviour
     public TMP_Text timerText;          // assign a TMP text in your UI
 
     private bool isRunning = true;
+    private bool hasStarted = false;
 
     private void Start()
     {
@@ -22,10 +23,15 @@ public class CountdownTimer : MonoBehaviour
         currentTime = maxTime;
 
         UpdateUI();
+
+        if (timerText != null)
+            timerText.gameObject.SetActive(false); // hide at start
     }
 
     private void Update()
     {
+        if (!hasStarted) return; // don’t tick until started
+
         if (!isRunning) return;
 
         currentTime -= Time.deltaTime;
@@ -104,6 +110,14 @@ public class CountdownTimer : MonoBehaviour
         currentTime = maxTime;
         isRunning = true;
         UpdateUI();
+    }
+
+    public void StartTimer()
+    {
+        if (timerText != null)
+            timerText.gameObject.SetActive(true);
+
+        hasStarted = true;
     }
 
 }
