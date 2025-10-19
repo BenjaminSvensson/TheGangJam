@@ -36,7 +36,7 @@ public class CarLooper : MonoBehaviour
 
     IEnumerator TeleportAfterDelay()
     {
-        float rnd = Random.Range(0.2f, 1.5f);
+        float rnd = Random.Range(0.1f, 1.2f);
         isWaiting = true;
         yield return new WaitForSeconds(rnd);
         transform.position = tunnelStart.position;
