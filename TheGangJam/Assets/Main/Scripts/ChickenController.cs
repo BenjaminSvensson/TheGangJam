@@ -200,37 +200,48 @@ public class ChickenController : MonoBehaviour
     }
 
     private void HandleGravity()
-    {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundRadius, groundMask);
+{
+    isGrounded = Physics.CheckSphere(groundCheck.position, groundRadius, groundMask);
 
-        if (isGrounded && velocity.y < 0)
+    if (isGrounded && velocity.y < 0)
+    {
+        velocity.y = -2f;
+        hasDoubleJumped = false;
+        isSlowFalling = false;
+    }
+
+    float appliedGravity = gravity;
+
+    // Handle Slow Fall
+    if (canSlowFall && !isGrounded)
+    {
+        bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
+
+        if (jumpHeld && hasDoubleJumped)
         {
-            velocity.y = -2f;
-            hasDoubleJumped = false;
+            // Enter slow fall
+            if (!isSlowFalling)
+            {
+                isSlowFalling = true;
+                animator?.SetTrigger("SlowFall"); // Trigger animation once
+            }
+
+            appliedGravity = gravity * slowFallGravityScale;
+        }
+        else
+        {
             isSlowFalling = false;
         }
-
-        float appliedGravity = gravity;
-
-        //Conditions for use slowfall
-        if (canSlowFall && !isGrounded)
-        {
-            bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
-
-            if (jumpHeld && hasDoubleJumped)
-            {
-                appliedGravity = gravity * slowFallGravityScale;
-                isSlowFalling = true;
-            }
-            else
-            {
-                isSlowFalling = false;
-            }
-        }
-
-        velocity.y += appliedGravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
     }
+    else
+    {
+        isSlowFalling = false;
+    }
+
+    velocity.y += appliedGravity * Time.deltaTime;
+    controller.Move(velocity * Time.deltaTime);
+}
+
 
     private void HandleJumpLogic()
     {
@@ -257,7 +268,14 @@ public class ChickenController : MonoBehaviour
         velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         PlayRandomClip(isDouble ? doubleJumpClips : jumpClips);
         TriggerSquashStretch();
+
+        if (animator)
+        {
+            if (isDouble)
+                animator.SetTrigger("DoubleJump");
+        }
     }
+
 
     private void TryDash()
     {
