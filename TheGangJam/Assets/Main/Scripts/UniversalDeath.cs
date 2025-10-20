@@ -1,17 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 
 public class UniversalDeath : MonoBehaviour
 {
     [Header("References")]
-    public ChickenController player;          
-    public Transform playerVisual;            
-    public CameraController cameraController; 
+    public ChickenController player;
+    public Transform playerVisual;
+    public CameraController cameraController;
+    public UnityEditor.Animations.AnimatorController animatorControl;
 
     [Header("Respawn Settings")]
-    public Transform respawnPoint;       
-    public float respawnDelay = 2f;      
+    public Transform respawnPoint;
+    public float respawnDelay = 2f;
 
     [Header("Powerups")]
     public List<PowerUp> powerupPrefabs; //PowerupObjectForRespawnFunc Later
@@ -19,9 +21,9 @@ public class UniversalDeath : MonoBehaviour
     private List<Quaternion> originalRotations = new List<Quaternion>();
 
     [Header("Audio")]
-    public AudioSource audioSource;      
-    public AudioClip deathSound;         
-    public AudioClip respawnSound;       
+    public AudioSource audioSource;
+    public AudioClip deathSound;
+    public AudioClip respawnSound;
 
     private void Start()
     {
@@ -38,7 +40,11 @@ public class UniversalDeath : MonoBehaviour
 
     public void KillPlayer()
     {
-        
+        if (player.animator != null)
+        {
+            player.animator.SetTrigger("Die");
+        }
+
         if (audioSource != null && deathSound != null)
             audioSource.PlayOneShot(deathSound);
 
@@ -48,7 +54,7 @@ public class UniversalDeath : MonoBehaviour
 
         if (player != null)
         {
-            player.canWalk = true;   
+            player.canWalk = true;
             player.canJump = false;
             player.canDoubleJump = false;
             player.canDash = false;
@@ -64,15 +70,15 @@ public class UniversalDeath : MonoBehaviour
         {
             PowerUp p = powerupPrefabs[i];
 
-           
+
             p.transform.position = originalPositions[i];
             p.transform.rotation = originalRotations[i];
 
-           
+
             if (!p.gameObject.activeSelf)
                 p.gameObject.SetActive(true);
 
-            
+
             p.ResetPowerUp();
         }
 
@@ -93,6 +99,13 @@ public class UniversalDeath : MonoBehaviour
             player.transform.rotation = respawnPoint.rotation;
 
             player.ResetVelocity();
+
+            if (player.animator != null)
+            {
+                player.animator.ResetTrigger("Die");
+                player.animator.Play("Idle"); 
+            }
+
 
             if (cc != null) cc.enabled = true;
         }

@@ -9,7 +9,8 @@ public class CountdownTimer : MonoBehaviour
     private float initialMaxTime;       
 
     [Header("UI")]
-    public TMP_Text timerText;         
+    public TMP_Text timerText;
+    public GameObject clock;
 
     private bool isRunning = true;
     private bool hasStarted = false;
@@ -26,6 +27,7 @@ public class CountdownTimer : MonoBehaviour
 
         if (timerText != null)
             timerText.gameObject.SetActive(false);
+            clock.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -110,6 +112,7 @@ public class CountdownTimer : MonoBehaviour
     {
         if (timerText != null)
             timerText.gameObject.SetActive(true);
+            clock.gameObject.SetActive(true);
 
         hasStarted = true;
     }
