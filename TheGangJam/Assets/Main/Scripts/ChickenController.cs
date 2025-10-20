@@ -200,47 +200,45 @@ public class ChickenController : MonoBehaviour
     }
 
     private void HandleGravity()
-{
-    isGrounded = Physics.CheckSphere(groundCheck.position, groundRadius, groundMask);
-
-    if (isGrounded && velocity.y < 0)
     {
-        velocity.y = -2f;
-        hasDoubleJumped = false;
-        isSlowFalling = false;
-    }
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundRadius, groundMask);
 
-    float appliedGravity = gravity;
-
-    // Handle Slow Fall
-    if (canSlowFall && !isGrounded)
-    {
-        bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
-
-        if (jumpHeld && hasDoubleJumped)
+        if (isGrounded && velocity.y < 0)
         {
-            // Enter slow fall
-            if (!isSlowFalling)
-            {
-                isSlowFalling = true;
-                animator?.SetTrigger("SlowFall"); // Trigger animation once
-            }
+            velocity.y = -2f;
+            hasDoubleJumped = false;
+            isSlowFalling = false;
+        }
 
-            appliedGravity = gravity * slowFallGravityScale;
+        float appliedGravity = gravity;
+
+        // Slow Fall
+        if (canSlowFall && !isGrounded)
+        {
+            bool jumpHeld = inputActions.Player.Jump.ReadValue<float>() > 0.1f;
+
+            if (jumpHeld && hasDoubleJumped)
+            {
+                if (!isSlowFalling)
+                {
+                    isSlowFalling = true;
+                    // We no longer use a trigger; boolean is enough
+                }
+                appliedGravity = gravity * slowFallGravityScale;
+            }
+            else
+            {
+                isSlowFalling = false;
+            }
         }
         else
         {
             isSlowFalling = false;
         }
-    }
-    else
-    {
-        isSlowFalling = false;
-    }
 
-    velocity.y += appliedGravity * Time.deltaTime;
-    controller.Move(velocity * Time.deltaTime);
-}
+        velocity.y += appliedGravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
 
 
     private void HandleJumpLogic()
@@ -271,8 +269,14 @@ public class ChickenController : MonoBehaviour
 
         if (animator)
         {
-            if (isDouble)
+            if (isDouble && !animator.GetCurrentAnimatorStateInfo(0).IsName("DoubleJump"))
+            {
                 animator.SetTrigger("DoubleJump");
+            }
+            else if (!isDouble && !animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
+            {
+                animator.SetTrigger("Jump");
+            }
         }
     }
 
@@ -291,6 +295,12 @@ public class ChickenController : MonoBehaviour
 
         PlayRandomClip(dashClips);
 
+        // Trigger dash animation only if not already in dash animation
+        if (animator && !animator.GetCurrentAnimatorStateInfo(0).IsName("Dash"))
+        {
+            animator.SetTrigger("Dash");
+        }
+
         Invoke(nameof(ResetDashCooldown), dashCooldown);
     }
 
@@ -303,12 +313,22 @@ public class ChickenController : MonoBehaviour
     {
         if (!animator) return;
 
+        // Movement speed
         float speedPercent = new Vector2(moveInput.x, moveInput.y).magnitude;
         animator.SetFloat("Speed", speedPercent);
-        animator.SetBool("IsJumping", !isGrounded);
-        animator.SetBool("IsDashing", isDashing);
-        animator.SetBool("IsSprinting", isSprinting);
+
+        // Jumping
+        bool currentlyJumping = !isGrounded;
+        animator.SetBool("IsJumping", currentlyJumping);
+
+        // Slow Fall
         animator.SetBool("IsSlowFalling", isSlowFalling);
+
+        // Dashing
+        animator.SetBool("IsDashing", isDashing);
+
+        // Sprinting
+        animator.SetBool("IsSprinting", isSprinting);
     }
 
     private void HandleVisuals()
