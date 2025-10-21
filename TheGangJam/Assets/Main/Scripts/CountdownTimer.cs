@@ -4,9 +4,9 @@ using TMPro;
 public class CountdownTimer : MonoBehaviour
 {
     [Header("Timer Settings")]
-    public float maxTime = 60f;         
-    public float currentTime;           
-    private float initialMaxTime;       
+    public float maxTime = 60f;
+    public float currentTime;
+    private float initialMaxTime;
 
     [Header("UI")]
     public TMP_Text timerText;
@@ -17,23 +17,20 @@ public class CountdownTimer : MonoBehaviour
 
     private void Start()
     {
-        
         initialMaxTime = maxTime;
-
-        
         currentTime = maxTime;
 
         UpdateUI();
 
         if (timerText != null)
             timerText.gameObject.SetActive(false);
+        if (clock != null)
             clock.gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        if (!hasStarted) return; 
-
+        if (!hasStarted) return;
         if (!isRunning) return;
 
         currentTime -= Time.deltaTime;
@@ -61,8 +58,7 @@ public class CountdownTimer : MonoBehaviour
     {
         Debug.Log("Timer ended! Triggering death...");
 
-        //Kill player
-        UniversalDeath  deathManager = FindFirstObjectByType<UniversalDeath>();
+        UniversalDeath deathManager = FindFirstObjectByType<UniversalDeath>();
         if (deathManager != null)
         {
             deathManager.KillPlayer();
@@ -112,9 +108,15 @@ public class CountdownTimer : MonoBehaviour
     {
         if (timerText != null)
             timerText.gameObject.SetActive(true);
+        if (clock != null)
             clock.gameObject.SetActive(true);
 
         hasStarted = true;
     }
 
+    public void StopTimer()
+    {
+        isRunning = false;
+        hasStarted = false;
+    }
 }
