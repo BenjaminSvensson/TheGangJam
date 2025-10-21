@@ -8,14 +8,17 @@ using UnityEditor;
 public class Exit_script : MonoBehaviour
 {
     public Button quitbutton;
+    public Button creditsButton;
     public Button startbutton;
-    public string sceneName = "MainScene"; // change to your scene name
+    public string sceneName = "MainScene";
+    public string sceneName2 = "Credits";
 
     void Start()
     {
         // Register the listeners ONCE
         quitbutton.onClick.AddListener(Quit);
         startbutton.onClick.AddListener(StartGame);
+        creditsButton.onClick.AddListener(Goon);
     }
 
     public void Quit()
@@ -30,5 +33,10 @@ public class Exit_script : MonoBehaviour
     void StartGame()
     {
         SceneManager.LoadScene(sceneName);
+    }
+
+    void Goon()
+    {
+        SceneManager.LoadScene(sceneName2);
     }
 }

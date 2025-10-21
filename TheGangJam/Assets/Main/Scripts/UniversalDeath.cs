@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
 
 public class UniversalDeath : MonoBehaviour
 {
@@ -9,7 +8,8 @@ public class UniversalDeath : MonoBehaviour
     public ChickenController player;
     public Transform playerVisual;
     public CameraController cameraController;
-    public UnityEditor.Animations.AnimatorController animatorControl;
+    public Animator animatorControl;
+
 
     [Header("Respawn Settings")]
     public Transform respawnPoint;
