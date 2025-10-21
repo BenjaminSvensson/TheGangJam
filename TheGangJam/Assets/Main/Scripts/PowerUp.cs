@@ -15,10 +15,18 @@ public class PowerUp : MonoBehaviour
 
     [Header("Feedback")]
     public AudioClip pickupSound;
-    public TMP_Text pickupText;              
+    public AudioClip narratorVoice;
+
+    [Tooltip("Assign an AudioSource for SFX (pickup chime, etc.)")]
+    public AudioSource sfxSource;
+
+    [Tooltip("Assign an AudioSource for narration voice lines")]
+    public AudioSource narratorSource;
+
+    public TMP_Text pickupText;
 
     [TextArea]
-    public string[] pickupMessages;          
+    public string[] pickupMessages;
     public float fadeDuration = 0.5f;
     public float holdDuration = 1.5f;
 
@@ -45,7 +53,7 @@ public class PowerUp : MonoBehaviour
         if (player == null)
             return;
 
-        //Give ability 
+        // Give ability
         switch (type)
         {
             case PowerupType.Jump: player.canJump = true; break;
@@ -61,9 +69,15 @@ public class PowerUp : MonoBehaviour
             timer.AddBonusTime(bonusTime);
         }
 
-        if (pickupSound != null)
-            AudioSource.PlayClipAtPoint(pickupSound, Camera.main != null ? Camera.main.transform.position : transform.position);
+        // 🔊 Play pickup sound through SFX source
+        if (pickupSound != null && sfxSource != null)
+            sfxSource.PlayOneShot(pickupSound);
 
+        // 🔊 Play narrator voice through narrator source
+        if (narratorVoice != null && narratorSource != null)
+            narratorSource.PlayOneShot(narratorVoice);
+
+        // Show pickup text
         if (pickupText != null && pickupMessages != null && pickupMessages.Length > 0)
             TemporaryTextFader.FadeSequence(pickupText, pickupMessages, fadeDuration, holdDuration);
 
@@ -98,7 +112,7 @@ public class PowerUp : MonoBehaviour
         enabled = true;
     }
 
-    //Handle fade
+    // Fade helper
     private class TemporaryTextFader : MonoBehaviour
     {
         public static void FadeSequence(TMP_Text text, string[] messages, float fadeDuration, float holdDuration)

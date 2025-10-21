@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,9 +17,13 @@ public class AreaTrigger : MonoBehaviour
     public float holdDuration = 2f;
 
     [Header("Audio Sources")]
-    public AudioSource sfxSource;       //Area enter sound
+    public AudioSource sfxSource;       // Area enter sound
     public AudioSource ambianceSourceA;
     public AudioSource ambianceSourceB;
+
+    [Header("Ambiance Volume")]
+    [Range(0f, 1f)]
+    public float targetAmbianceVolume = 0.4f; // 👈 adjust in Inspector
 
     private static HashSet<string> visitedAreas = new HashSet<string>();
     private static AudioSource currentAmbianceSource;
@@ -36,7 +40,7 @@ public class AreaTrigger : MonoBehaviour
             nextAmbianceSource = ambianceSourceB;
         }
 
-        //Start text transparant make visible when used
+        // Start text transparent
         if (areaNameText != null)
         {
             Color c = areaNameText.color;
@@ -49,16 +53,13 @@ public class AreaTrigger : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
-        //Trigger func
         if (!visitedAreas.Contains(areaName))
         {
             visitedAreas.Add(areaName);
 
-            
             if (entrySound != null && sfxSource != null)
                 sfxSource.PlayOneShot(entrySound);
 
-            //Show area name
             if (areaNameText != null)
             {
                 if (showNameRoutine != null) StopCoroutine(showNameRoutine);
@@ -66,7 +67,6 @@ public class AreaTrigger : MonoBehaviour
             }
         }
 
-        //Swap ambiance
         if (ambianceClip != null && currentAmbianceSource != null && nextAmbianceSource != null)
         {
             if (crossfadeRoutine != null) StopCoroutine(crossfadeRoutine);
@@ -89,7 +89,6 @@ public class AreaTrigger : MonoBehaviour
         c.a = 1;
         areaNameText.color = c;
 
-        // Hold
         yield return new WaitForSeconds(holdDuration);
 
         // Fade out
@@ -116,14 +115,14 @@ public class AreaTrigger : MonoBehaviour
         for (float t = 0; t < duration; t += Time.deltaTime)
         {
             float lerp = t / duration;
-            currentAmbianceSource.volume = Mathf.Lerp(1f, 0f, lerp);
-            nextAmbianceSource.volume = Mathf.Lerp(0f, 1f, lerp);
+            currentAmbianceSource.volume = Mathf.Lerp(targetAmbianceVolume, 0f, lerp);
+            nextAmbianceSource.volume = Mathf.Lerp(0f, targetAmbianceVolume, lerp);
             yield return null;
         }
 
         currentAmbianceSource.Stop();
         currentAmbianceSource.volume = 0f;
-        nextAmbianceSource.volume = 1f;
+        nextAmbianceSource.volume = targetAmbianceVolume;
 
         var temp = currentAmbianceSource;
         currentAmbianceSource = nextAmbianceSource;
