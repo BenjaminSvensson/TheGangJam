@@ -1,9 +1,12 @@
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EndGameTrigger : MonoBehaviour
 {
-    public float floatSpeed = 2f;      // how fast the player rises
-    public float spinSpeed = 180f;     // degrees per second
+    public float floatSpeed = 2f;     
+    public float spinSpeed = 180f;     
+    public string mainMenuSceneName = "Menu"; 
+    public float delayBeforeMenu = 6f; 
 
     private bool endSequenceActive = false;
     private Transform playerTransform;
@@ -25,14 +28,13 @@ public class EndGameTrigger : MonoBehaviour
             var countdown = FindObjectOfType<CountdownTimer>();
             if (countdown != null) countdown.StopTimer();
 
-            // Lock camera position/rotation
+            // Lock camera
             mainCam = Camera.main;
             if (mainCam != null)
             {
                 camLockPos = mainCam.transform.position;
                 camLockRot = mainCam.transform.rotation;
 
-                // Disable player camera script so it stops moving
                 var camController = mainCam.GetComponent<CameraController>();
                 if (camController != null) camController.enabled = false;
             }
@@ -53,6 +55,9 @@ public class EndGameTrigger : MonoBehaviour
                 rect.pivot = new Vector2(0.5f, 0.5f);
                 rect.anchoredPosition = Vector2.zero;
             }
+
+            // 👇 Start coroutine to load main menu after delay
+            StartCoroutine(LoadMenuAfterDelay());
         }
     }
 
@@ -73,5 +78,11 @@ public class EndGameTrigger : MonoBehaviour
                 mainCam.transform.rotation = camLockRot;
             }
         }
+    }
+
+    private System.Collections.IEnumerator LoadMenuAfterDelay()
+    {
+        yield return new WaitForSeconds(delayBeforeMenu);
+        SceneManager.LoadScene(mainMenuSceneName);
     }
 }

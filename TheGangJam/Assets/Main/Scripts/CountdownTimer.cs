@@ -12,8 +12,15 @@ public class CountdownTimer : MonoBehaviour
     public TMP_Text timerText;
     public GameObject clock;
 
+    [Header("Audio")]
+    public AudioSource audioSource;       // assign in Inspector
+    public AudioClip normalLoop;          // loop while > 20s
+    public AudioClip urgentLoop;          // loop when <= 20s
+    public float urgentThreshold = 20f;   // seconds left before switching
+
     private bool isRunning = true;
     private bool hasStarted = false;
+    private bool isUrgent = false;
 
     private void Start()
     {
@@ -26,6 +33,14 @@ public class CountdownTimer : MonoBehaviour
             timerText.gameObject.SetActive(false);
         if (clock != null)
             clock.gameObject.SetActive(false);
+
+        // Start normal loop if assigned
+        if (audioSource != null && normalLoop != null)
+        {
+            audioSource.clip = normalLoop;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
     }
 
     private void Update()
@@ -41,7 +56,25 @@ public class CountdownTimer : MonoBehaviour
             OnTimerEnd();
         }
 
+        // Check if we need to switch to urgent loop
+        if (!isUrgent && currentTime <= urgentThreshold)
+        {
+            SwitchToUrgentLoop();
+        }
+
         UpdateUI();
+    }
+
+    private void SwitchToUrgentLoop()
+    {
+        isUrgent = true;
+        if (audioSource != null && urgentLoop != null)
+        {
+            audioSource.Stop();
+            audioSource.clip = urgentLoop;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
     }
 
     private void UpdateUI()
@@ -67,6 +100,9 @@ public class CountdownTimer : MonoBehaviour
         {
             Debug.LogWarning("No UniversalDeathManager found in scene!");
         }
+
+        if (audioSource != null)
+            audioSource.Stop();
     }
 
     public void ResetTimerOnDeath()
@@ -74,7 +110,17 @@ public class CountdownTimer : MonoBehaviour
         maxTime = initialMaxTime;
         currentTime = maxTime;
         isRunning = true;
+        isUrgent = false;
         UpdateUI();
+
+        // Restart normal loop
+        if (audioSource != null && normalLoop != null)
+        {
+            audioSource.Stop();
+            audioSource.clip = normalLoop;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
     }
 
     public void AddBonusTime(float bonus)
@@ -90,18 +136,30 @@ public class CountdownTimer : MonoBehaviour
     public void PauseTimer()
     {
         isRunning = false;
+        if (audioSource != null) audioSource.Pause();
     }
 
     public void ResumeTimer()
     {
         isRunning = true;
+        if (audioSource != null) audioSource.UnPause();
     }
 
     public void ResetToMaxTime()
     {
         currentTime = maxTime;
         isRunning = true;
+        isUrgent = false;
         UpdateUI();
+
+        // Restart normal loop
+        if (audioSource != null && normalLoop != null)
+        {
+            audioSource.Stop();
+            audioSource.clip = normalLoop;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
     }
 
     public void StartTimer()
@@ -118,5 +176,6 @@ public class CountdownTimer : MonoBehaviour
     {
         isRunning = false;
         hasStarted = false;
+        if (audioSource != null) audioSource.Stop();
     }
 }
