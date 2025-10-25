@@ -3,14 +3,14 @@ using UnityEngine;
 public class TrappedSpikes : MonoBehaviour
 {
     [Header("Spike Settings")]
-    public Transform spike;          // assign the spike object in Inspector
-    public float riseHeight = 2f;    // how far it rises
-    public float riseSpeed = 5f;     // how fast it rises
-    public float resetDelay = 2f;    // how long before it goes back down
-    public float resetSpeed = 3f;    // how fast it goes back down
+    public Transform spike;          
+    public float riseHeight = 2f;   
+    public float riseSpeed = 5f;    
+    public float resetDelay = 2f;   
+    public float resetSpeed = 3f;    
 
     [Header("Audio")]
-    public AudioClip spikeSound;     // assign a sound in Inspector
+    public AudioClip spikeSound;     
     private AudioSource audioSource;
 
     private Vector3 startPos;
@@ -19,11 +19,11 @@ public class TrappedSpikes : MonoBehaviour
 
     private void Start()
     {
-        if (spike == null) spike = transform; // fallback
+        if (spike == null) spike = transform; //fallback
         startPos = spike.position;
         targetPos = startPos + Vector3.up * riseHeight;
 
-        // Ensure AudioSource exists
+        
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
             audioSource = gameObject.AddComponent<AudioSource>();

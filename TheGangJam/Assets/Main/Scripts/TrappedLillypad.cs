@@ -3,13 +3,13 @@
 public class TrappedLillypad : MonoBehaviour
 {
     [Header("Settings")]
-    public float sinkDistance = 2f;       // how far down it plunges
-    public float sinkSpeed = 2f;          // how fast it sinks
-    public float resetDelay = 3f;         // how long before it rises back up
-    public float riseSpeed = 2f;          // how fast it rises back
+    public float sinkDistance = 2f;       
+    public float sinkSpeed = 2f;          
+    public float resetDelay = 3f;         
+    public float riseSpeed = 2f;          
 
     [Header("Audio")]
-    public AudioClip plungeSound;         // assign in Inspector
+    public AudioClip plungeSound;         
     private AudioSource audioSource;
 
     private Vector3 startPos;

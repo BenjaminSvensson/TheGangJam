@@ -13,9 +13,9 @@ public class CountdownTimer : MonoBehaviour
     public GameObject clock;
 
     [Header("Audio")]
-    public AudioSource audioSource;       // assign in Inspector
-    public AudioClip normalLoop;          // loop while > 20s
-    public AudioClip urgentLoop;          // loop when <= 20s
+    public AudioSource audioSource;     
+    public AudioClip normalLoop;          
+    public AudioClip urgentLoop;          
     public float urgentThreshold = 20f;   // seconds left before switching
 
     private bool isRunning = true;
