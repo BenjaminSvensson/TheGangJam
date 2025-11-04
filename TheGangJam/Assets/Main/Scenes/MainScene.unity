@@ -4722,6 +4722,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
   m_PrefabInstance: {fileID: 199496164}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &199496168 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+  m_PrefabInstance: {fileID: 199496164}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2cfab3be11417f4cb44ac0eb4e7ccfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerUp
 --- !u!1 &207659105 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5466056033507856986, guid: 7f07cdb48db58104fba3a2d45f18e0e2, type: 3}
@@ -7683,6 +7694,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
   m_PrefabInstance: {fileID: 425868558}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &425868562 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6298484928922314049, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
+  m_PrefabInstance: {fileID: 425868558}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2cfab3be11417f4cb44ac0eb4e7ccfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PowerUp
 --- !u!1 &426573412 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -584413233861867849, guid: d2d03d4b5a1bb984e870912c4d2e3160, type: 3}
@@ -41346,6 +41368,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 9100000, guid: 6ec82b7af34b6f84f980c31022e5fd66, type: 2}
     - target: {fileID: 375800148899618875, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
+      propertyPath: powerupPrefabs.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 375800148899618875, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: 'powerupPrefabs.Array.data[0]'
       value: 
       objectReference: {fileID: 1390092956}
@@ -41357,6 +41383,14 @@ PrefabInstance:
       propertyPath: 'powerupPrefabs.Array.data[2]'
       value: 
       objectReference: {fileID: 1943202272}
+    - target: {fileID: 375800148899618875, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
+      propertyPath: 'powerupPrefabs.Array.data[3]'
+      value: 
+      objectReference: {fileID: 425868562}
+    - target: {fileID: 375800148899618875, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
+      propertyPath: 'powerupPrefabs.Array.data[4]'
+      value: 
+      objectReference: {fileID: 199496168}
     - target: {fileID: 574391187853641763, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: m_text
       value: 40
