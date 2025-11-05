@@ -5483,6 +5483,83 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -5491780849873737984, guid: 0057f081556b8f84283860a42b4471cc, type: 3}
+--- !u!1 &317811284
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 317811288}
+  - component: {fileID: 317811287}
+  - component: {fileID: 317811286}
+  - component: {fileID: 317811285}
+  m_Layer: 0
+  m_Name: Cube
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &317811285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317811284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0f8436086423b541ad711d0b618a95c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KillaScript
+  deathManager: {fileID: 0}
+  playerTag: Player
+--- !u!65 &317811286
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317811284}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 20.514778, z: 1}
+  m_Center: {x: 0, y: -9.757389, z: 0}
+--- !u!33 &317811287
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317811284}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &317811288
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317811284}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -9.90142, y: -50, z: 957}
+  m_LocalScale: {x: 3000, y: 1, z: 3000}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &327901257
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9026,7 +9103,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 106678281747626614, guid: 7f07cdb48db58104fba3a2d45f18e0e2, type: 3}
       propertyPath: speed
-      value: 80
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 106678281747626614, guid: 7f07cdb48db58104fba3a2d45f18e0e2, type: 3}
       propertyPath: carModel
@@ -10346,7 +10423,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6398640585554515784, guid: 7f07cdb48db58104fba3a2d45f18e0e2, type: 3}
       propertyPath: speed
-      value: 80
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 6398640585554515784, guid: 7f07cdb48db58104fba3a2d45f18e0e2, type: 3}
       propertyPath: carModel
@@ -10378,7 +10455,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: d7b0e590525d259428e4131048de3acd, type: 2}
     - target: {fileID: 6506889789562357216, guid: 7f07cdb48db58104fba3a2d45f18e0e2, type: 3}
       propertyPath: speed
-      value: 60
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 6506889789562357216, guid: 7f07cdb48db58104fba3a2d45f18e0e2, type: 3}
       propertyPath: carModel
@@ -41453,7 +41530,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: walkSpeed
-      value: 10
+      value: 8.5
       objectReference: {fileID: 0}
     - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: feetOffset
@@ -41473,7 +41550,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: deceleration
-      value: 60
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: sprintMultiplier
@@ -41798,3 +41875,4 @@ SceneRoots:
   - {fileID: 1407503347}
   - {fileID: 2135664473}
   - {fileID: 617124320}
+  - {fileID: 317811288}
