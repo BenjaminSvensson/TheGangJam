@@ -10,6 +10,10 @@ public class UniversalDeath : MonoBehaviour
     public CameraController cameraController;
     public Animator animatorControl;
 
+    [Header("Timer")]
+    public CountdownTimer countdownTimer; 
+
+
 
     [Header("Respawn Settings")]
     public Transform respawnPoint;
@@ -87,10 +91,21 @@ public class UniversalDeath : MonoBehaviour
 
     private IEnumerator RespawnRoutine()
     {
+
         yield return new WaitForSeconds(respawnDelay);
+        
+        NestScript nest = FindFirstObjectByType<NestScript>();
+
+        if (nest != null)
+        {
+            nest.PlayNestSequence(true);
+        }
+
 
         if (respawnPoint != null && player != null)
         {
+            
+
             CharacterController cc = player.GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
 
@@ -99,6 +114,13 @@ public class UniversalDeath : MonoBehaviour
             player.transform.rotation = respawnPoint.rotation;
 
             player.ResetVelocity();
+            
+            if (countdownTimer != null)
+            {
+                countdownTimer.ResetTimerOnDeath();
+            }
+
+
 
             if (player.animator != null)
             {

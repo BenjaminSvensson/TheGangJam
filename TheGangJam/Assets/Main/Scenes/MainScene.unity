@@ -14103,6 +14103,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1430314279}
     - target: {fileID: 5063852178344282016, guid: 51311db16698f0744a9caa18efabd787, type: 3}
+      propertyPath: tinyScale
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5063852178344282016, guid: 51311db16698f0744a9caa18efabd787, type: 3}
+      propertyPath: sitCooldown
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5063852178344282016, guid: 51311db16698f0744a9caa18efabd787, type: 3}
       propertyPath: zoomIntoEgg
       value: 1
       objectReference: {fileID: 0}
@@ -14120,7 +14128,7 @@ PrefabInstance:
       objectReference: {fileID: 1469657773}
     - target: {fileID: 5063852178344282016, guid: 51311db16698f0744a9caa18efabd787, type: 3}
       propertyPath: sitAnimDelay
-      value: 0
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 5063852178344282016, guid: 51311db16698f0744a9caa18efabd787, type: 3}
       propertyPath: zoomDistance
@@ -14995,27 +15003,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 05c35e3dfb520dc4399d42a064853c5f, type: 3}
       propertyPath: m_LocalScale.x
-      value: 6
+      value: 6.2124004
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 05c35e3dfb520dc4399d42a064853c5f, type: 3}
       propertyPath: m_LocalScale.y
-      value: 6
+      value: 6.2124004
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 05c35e3dfb520dc4399d42a064853c5f, type: 3}
       propertyPath: m_LocalScale.z
-      value: 6
+      value: 6.2124004
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 05c35e3dfb520dc4399d42a064853c5f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -23.65314
+      value: -23.59
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 05c35e3dfb520dc4399d42a064853c5f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 34.41704
+      value: 34.52
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 05c35e3dfb520dc4399d42a064853c5f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -302.12463
+      value: -302.13
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 05c35e3dfb520dc4399d42a064853c5f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -36573,7 +36581,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 34.24612
+      value: 33.5
       objectReference: {fileID: 0}
     - target: {fileID: 6541067507268232077, guid: ac52454ec4631a344b2686a5d227e46b, type: 3}
       propertyPath: m_LocalPosition.z
@@ -41364,6 +41372,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1852448216}
     - target: {fileID: 375800148899618875, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
+      propertyPath: countdownTimer
+      value: 
+      objectReference: {fileID: 755734618}
+    - target: {fileID: 375800148899618875, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: animatorControl
       value: 
       objectReference: {fileID: 9100000, guid: 6ec82b7af34b6f84f980c31022e5fd66, type: 2}
@@ -41440,6 +41452,10 @@ PrefabInstance:
       value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
+      propertyPath: walkSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: feetOffset
       value: -0.35
       objectReference: {fileID: 0}
@@ -41451,6 +41467,14 @@ PrefabInstance:
       propertyPath: visualRoot
       value: 
       objectReference: {fileID: 1469657772}
+    - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
+      propertyPath: acceleration
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
+      propertyPath: deceleration
+      value: 60
+      objectReference: {fileID: 0}
     - target: {fileID: 5954146467004019014, guid: 0e7244156ca904045a7dfce043efba41, type: 3}
       propertyPath: sprintMultiplier
       value: 1.8

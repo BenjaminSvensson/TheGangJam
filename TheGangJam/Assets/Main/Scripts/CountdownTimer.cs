@@ -107,8 +107,10 @@ public class CountdownTimer : MonoBehaviour
 
     public void ResetTimerOnDeath()
     {
+        Debug.Log("RT");
         maxTime = initialMaxTime;
-        currentTime = maxTime;
+        currentTime = initialMaxTime;
+
         isRunning = true;
         isUrgent = false;
         UpdateUI();
@@ -122,6 +124,7 @@ public class CountdownTimer : MonoBehaviour
             audioSource.Play();
         }
     }
+
 
     public void AddBonusTime(float bonus)
     {
