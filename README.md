@@ -1,7 +1,7 @@
 # 🥚 Egg Timer
 A Unity game made for a game jam hosted by [The Gang](https://www.thegang.io/games) in collaboration with our school.
 
-[![Trailer](https://img.youtube.com/vi/hpmYUaRzv3M/maxresdefault.jpg)](https://www.youtube.com/watch?v=hpmYUaRzv3M)
+[![Trailer](https://img.youtube.com/vi/hpmYUaRzv3M/hqdefault.jpg)](https://www.youtube.com/watch?v=hpmYUaRzv3M)
 
 Play👉 [**benjy3.itch.io/eggtimer**](https://benjy3.itch.io/eggtimer)
 
